@@ -1,0 +1,2 @@
+antes de digitar comando php: ./vendor/bin/sail
+
