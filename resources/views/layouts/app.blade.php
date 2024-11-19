@@ -14,31 +14,67 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+        <!-- AdminLTE Styles -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+
         <!-- Styles -->
         @livewireStyles
     </head>
-    <body class="font-sans antialiased">
-        <x-banner />
+    <body class="hold-transition sidebar-mini layout-fixed">
+        <div class="wrapper">
 
-        <div class="min-h-screen bg-gray-100">
-            @livewire('navigation-menu')
+            <!-- Navbar -->
+            <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+                <!-- Left navbar links -->
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                            <i class="fas fa-bars"></i>
+                        </a>
+                    </li>
+                </ul>
 
-            <!-- Page Heading -->
-            @if (isset($header))
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
+                <!-- Right navbar links -->
+                @livewire('navigation-menu')
+            </nav>
+
+            <!-- Sidebar -->
+            @include('components-adminlte.sidebar')
+
+            <!-- Content Wrapper -->
+            <div class="content-wrapper">
+                <!-- Page Heading -->
+                @if (isset($header))
+                    <div class="content-header">
+                        <div class="container-fluid">
+                            <div class="row mb-2">
+                                <div class="col-sm-6">
+                                    <h1 class="m-0">{{ $header }}</h1>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </header>
-            @endif
+                @endif
 
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
+                <!-- Page Content -->
+                <section class="content">
+                    <div class="container-fluid">
+                        {{ $slot }}
+                    </div>
+                </section>
+            </div>
+
+            <!-- Footer -->
+            <footer class="main-footer">
+                <div class="float-right d-none d-sm-inline">
+                    Qualquer texto adicional
+                </div>
+                <strong>Copyright &copy; 2023 <a href="#">Seu Sistema</a>.</strong> Todos os direitos reservados.
+            </footer>
         </div>
 
-        @stack('modals')
+        <!-- AdminLTE Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 
         @livewireScripts
     </body>

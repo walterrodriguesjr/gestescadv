@@ -1,3 +1,8 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'admin-lte/dist/css/adminlte.min.css';
+
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,3 +10,4 @@
 [x-cloak] {
     display: none;
 }
+
