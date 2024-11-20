@@ -20,7 +20,12 @@
                         <p>Perfil</p>
                     </a>
                 </li>
-                <!-- Adicione mais itens de menu aqui -->
+                <li class="nav-item">
+                    <a href="{{route('cliente/view_cliente')}}" class="nav-link">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>Cliente</p>
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>

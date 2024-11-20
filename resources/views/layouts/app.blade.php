@@ -62,7 +62,8 @@
                 <!-- Page Content -->
                 <section class="content">
                     <div class="container-fluid">
-                        {{ $slot }}
+                        @yield('content')
+                        {{ $slot ?? ''}}
                     </div>
                 </section>
             </div>
