@@ -11,6 +11,9 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+        <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
+
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -20,7 +23,7 @@
         <!-- Styles -->
         @livewireStyles
     </head>
-    <body class="hold-transition sidebar-mini layout-fixed">
+    <body class="hold-transition sidebar-mini layout-fixed sidebar-collapse">
         <div class="wrapper">
 
             <!-- Navbar -->
@@ -79,3 +82,15 @@
         @livewireScripts
     </body>
 </html>
+
+<script>
+    $(document).ready(function () {
+    $('.nav-link[data-widget="pushmenu"]').on('click', function (e) {
+        e.preventDefault();
+        $('body').toggleClass('sidebar-collapse'); // Alterna a classe para recolher ou expandir o sidebar
+    });
+});
+
+</script>
+
+

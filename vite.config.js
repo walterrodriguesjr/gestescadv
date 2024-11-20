@@ -11,4 +11,13 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    resolve: {
+        alias: {
+            '$': 'jquery',
+            'jQuery': 'jquery',
+        },
+    },
+    optimizeDeps: {
+        include: ['jquery', 'admin-lte'], // Garante que AdminLTE e jQuery sejam otimizados
+    },
 });

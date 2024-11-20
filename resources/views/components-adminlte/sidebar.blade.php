@@ -26,3 +26,12 @@
     </div>
 </aside>
 
+<!-- Script para o toggle do sidebar -->
+<script>
+    $(document).ready(function () {
+        $('.nav-link[data-widget="pushmenu"]').on('click', function (e) {
+            e.preventDefault();
+            $('body').toggleClass('sidebar-collapse'); // Alterna a classe para recolher ou expandir o sidebar
+        });
+    });
+</script>
