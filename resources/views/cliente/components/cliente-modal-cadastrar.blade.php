@@ -9,59 +9,59 @@
             </div>
             <div class="modal-body">
                 <form>
-                    <div class="mb-3">
-                        <div class="col-12">
-                            <label for="recipient-name" class="col-form-label">Nome Completo</label>
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="clienteNomeCompleto" class="col-form-label fw-normal">Nome Completo</label>
                             <input type="text" class="form-control" id="clienteNomeCompleto"
                                 name="cliente_nome_completo">
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-2 mb-3">
-                            <label for="message-text" class="col-form-label">CPF</label>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="clienteCpf" class="col-form-label fw-normal">CPF</label>
                             <input type="text" class="form-control" id="clienteCpf" name="cliente_cpf">
                         </div>
-                        <div class="col-6 mb-3">
-                            <label for="message-text" class="col-form-label">E-mail</label>
+                        <div class="col-md-6 col-lg-6 mb-3">
+                            <label for="clienteEmail" class="col-form-label fw-normal">E-mail</label>
                             <input type="email" class="form-control" id="clienteEmail" name="cliente_email">
                         </div>
-                        <div class="col-2 mb-3">
-                            <label for="message-text" class="col-form-label">Celular</label>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="clienteCelular" class="col-form-label fw-normal">Celular</label>
                             <input type="text" class="form-control" id="clienteCelular" name="cliente_celular">
                         </div>
-                        <div class="col-2 mb-3">
-                            <label for="message-text" class="col-form-label">Telefone</label>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="clienteTelefone" class="col-form-label fw-normal">Telefone</label>
                             <input type="text" class="form-control" id="clienteTelefone" name="cliente_telefone">
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-2 mb-3">
-                            <label for="message-text" class="col-form-label">CEP</label>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="clienteCep" class="col-form-label fw-normal">CEP</label>
                             <input type="text" class="form-control" id="clienteCep" name="cliente_cep">
                         </div>
-                        <div class="col-8 mb-3">
-                            <label for="message-text" class="col-form-label">Rua</label>
+                        <div class="col-md-6 col-lg-6 mb-3">
+                            <label for="clienteRua" class="col-form-label fw-normal">Rua</label>
                             <input type="text" class="form-control" id="clienteRua" name="cliente_rua">
-                        </div>
-                        <div class="col-2 mb-3">
-                            <label for="message-text" class="col-form-label">Número</label>
-                            <input type="text" class="form-control" id="clienteNumero" name="cliente_numero">
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-4 mb-3">
-                            <label for="message-text" class="col-form-label">Bairro</label>
-                            <input type="text" class="form-control" id="clienteBairro" name="cliente_Bairro">
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="clienteNumero" class="col-form-label fw-normal">Número</label>
+                            <input type="text" class="form-control" id="clienteNumero" name="cliente_numero">
                         </div>
-                        <div class="col-4 mb-3">
-                            <label for="clienteEstado" class="col-form-label">Estado</label>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="clienteBairro" class="col-form-label fw-normal">Bairro</label>
+                            <input type="text" class="form-control" id="clienteBairro" name="cliente_bairro">
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="clienteEstado" class="col-form-label fw-normal">Estado</label>
                             <select class="form-select" id="clienteEstado" name="cliente_estado">
                                 <option selected>Selecione</option>
                                 <!-- Opções de estados -->
                             </select>
                         </div>
-                        <div class="col-4 mb-3">
-                            <label for="clienteCidade" class="col-form-label">Cidade</label>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="clienteCidade" class="col-form-label fw-normal">Cidade</label>
                             <select class="form-select" id="clienteCidade" name="cliente_cidade">
                                 <option selected>Selecione</option>
                                 <!-- Opções de cidades -->
