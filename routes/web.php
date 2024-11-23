@@ -18,6 +18,7 @@ Route::middleware([
 
     //clientes 
 Route::get('/view-cliente', [ClienteController::class, 'viewCliente'])->name('cliente/view_cliente');
+Route::resource('/cliente', ClienteController::class);
 });
 
 
