@@ -10,8 +10,14 @@
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
+        <!-- Select2 CSS -->
+        <link rel="stylesheet" href="{{ asset('css/select2.min.css') }}">
 
+        {{-- jQuery JS --}}
         <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
+
+        <!-- Select2 JS -->
+        <script src="{{ asset('js/select2.min.js') }}"></script>
 
 
         <!-- Scripts -->

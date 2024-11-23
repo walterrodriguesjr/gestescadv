@@ -56,17 +56,18 @@
                         <div class="col-md-6 col-lg-3 mb-3">
                             <label for="clienteEstado" class="col-form-label fw-normal">Estado</label>
                             <select class="form-select" id="clienteEstado" name="cliente_estado">
-                                <option selected>Selecione</option>
-                                <!-- Opções de estados -->
+                                <option value="" disabled selected>Selecione</option>
+                                <!-- Opções de estados serão adicionadas dinamicamente -->
                             </select>
                         </div>
                         <div class="col-md-6 col-lg-3 mb-3">
                             <label for="clienteCidade" class="col-form-label fw-normal">Cidade</label>
                             <select class="form-select" id="clienteCidade" name="cliente_cidade">
-                                <option selected>Selecione</option>
-                                <!-- Opções de cidades -->
+                                <option value="" disabled selected>Selecione</option>
+                                <!-- Opções de cidades serão adicionadas dinamicamente -->
                             </select>
                         </div>
+                        
                     </div>
                 </form>
             </div>
