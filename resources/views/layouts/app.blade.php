@@ -19,6 +19,8 @@
         <!-- Select2 JS -->
         <script src="{{ asset('js/select2.min.js') }}"></script>
 
+        
+
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -85,6 +87,7 @@
 
         <!-- AdminLTE Scripts -->
         <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
 
         @livewireScripts
     </body>

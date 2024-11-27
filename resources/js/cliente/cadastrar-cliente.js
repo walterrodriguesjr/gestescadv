@@ -2,13 +2,13 @@
 $("#abrirModalCadastrarCliente").click(function (e) {
     e.preventDefault();
     $("#clienteModalCadastrar").modal("show");
-    carregarEstados(); 
+    carregarEstados();
 
     //INICIO carregamento de cidades com base no estado selecionado
     $("#clienteEstado").on("change", function () {
-    let estado = $(this).val();
-    carregarCidades(estado);
-});
+        let estado = $(this).val();
+        carregarCidades(estado);
+    });
     // FIM carregamento de cidades com base no estado selecionado
 });
 // FIM click para abrir modal de cadastrar cliente

@@ -67,7 +67,7 @@
                                 <!-- Opções de cidades serão adicionadas dinamicamente -->
                             </select>
                         </div>
-                        
+
                     </div>
                 </form>
             </div>
