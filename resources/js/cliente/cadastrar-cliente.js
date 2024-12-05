@@ -1,3 +1,4 @@
+
 // INÍCIO click para abrir modal de cadastrar cliente
 $("#abrirModalCadastrarCliente").click(function (e) {
     e.preventDefault();
@@ -28,18 +29,23 @@ $("#clienteCep").change(function (e) {
                 if (data.erro) {
                     alert("CEP não localizado.");
                 } else {
-                    console.log("dados", data);
                     $("#clienteRua").val(data.logradouro);
                     $("#clienteBairro").val(data.bairro);
 
+                    // Preencher Estado e Cidade
                     let estado = data.uf;
-                    let estadoSelect = $("#clienteEstado");
-                    estadoSelect.val(estado).trigger('change'); // Seleciona o estado automaticamente
-
                     let cidade = data.localidade;
-                    let cidadeSelect = $("#clienteCidade");
-                    cidadeSelect.empty(); // Limpa o select antes de adicionar
-                    cidadeSelect.append(`<option value="${cidade}" selected>${cidade}</option>`);
+
+                    // Atualiza o Estado no Select2
+                    let estadoSelect = $("#clienteEstado");
+                    estadoSelect.val(estado).trigger('change'); // Seleciona o estado automaticamente no select2
+
+                    // Aguarda o carregamento das cidades antes de selecionar
+                    carregarCidades(estado, function () {
+                        let cidadeSelect = $("#clienteCidade");
+                        cidadeSelect.empty().append(`<option value="${cidade}" selected>${cidade}</option>`);
+                        cidadeSelect.val(cidade).trigger('change'); // Atualiza o Select2
+                    });
                 }
             },
             error: function () {
@@ -59,6 +65,9 @@ $('#clienteEstado').select2({
     allowClear: true,
     minimumResultsForSearch: 0,
     width: '100%'
+}).on('change', function () {
+    let estado = $(this).val();
+    carregarCidades(estado); // Carrega cidades quando o estado muda
 });
 
 $('#clienteCidade').select2({
@@ -94,7 +103,7 @@ function carregarEstados() {
 
 
 // INÍCIO carregamento de cidades com base no estado selecionado
-function carregarCidades(estado) {
+function carregarCidades(estado, callback) {
     let cidadeSelect = $("#clienteCidade");
 
     if (estado) {
@@ -109,6 +118,8 @@ function carregarCidades(estado) {
                 data.forEach(function (cidade) {
                     cidadeSelect.append(`<option value="${cidade.nome}">${cidade.nome}</option>`);
                 });
+
+                if (callback) callback(); // Executa callback se definido
             },
             error: function () {
                 alert("Erro ao carregar as cidades. Tente novamente mais tarde.");
@@ -118,8 +129,52 @@ function carregarCidades(estado) {
     } else {
         cidadeSelect.prop('disabled', true).empty().append('<option value="" disabled selected>Selecione a Cidade</option>');
     }
-};
-// SIM carregamento de cidades com base no estado selecionado
+}
+// FIM carregamento de cidades com base no estado selecionado
+
+
+//INICIO salvar dados novo cliente
+
+$("#buttonSalvarDadosNovoCliente").click(function (e) {
+    e.preventDefault();
+    
+});
+
+//FIM salvar dados novo cliente
+
+//INICIO uso de mascaras nos inputs do modal de cadastrar novo cliente
+$(document).ready(function () {
+    $('#clienteNomeCompleto').on('input', function () {
+        const valorAtual = $(this).val();
+        const transformado = valorAtual.replace(/\w\S*/g, function (texto) {
+            return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+        });
+        $(this).val(transformado);
+    });
+
+    $('#clienteRua').on('input', function () {
+        const valorAtual = $(this).val();
+        const transformado = valorAtual.replace(/\w\S*/g, function (texto) {
+            return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+        });
+        $(this).val(transformado);
+    });
+
+    $('#clienteNumero').on('keypress', function (e) {
+        if (e.which < 48 || e.which > 57) {
+            e.preventDefault();
+        }
+    });
+    
+        $('#clienteCpf').mask('000.000.000-00', { reverse: true });
+        $('#clienteCelular').mask('(00) 00000-0000');
+        $('#clienteTelefone').mask('(00) 0000-0000');
+        $('#clienteCep').mask('00000-000');
+        
+    });
+    
+    //FIM uso de mascaras nos inputs do modal de cadastrar novo cliente
+
 
 
 

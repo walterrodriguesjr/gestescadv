@@ -34,6 +34,13 @@
 
                 <div
                     class="flex items-center justify-end px-4 py-3 bg-gray-50 text-right sm:px-6 shadow sm:rounded-bl-md sm:rounded-br-md">
+                    <div x-data="{ shown: false, timeout: null }"
+                        x-init="window.addEventListener('salvo', () => { clearTimeout(timeout); shown = true; timeout = setTimeout(() => { shown = false }, 2000); })"
+                        x-show="shown"
+                        x-transition:leave.opacity.duration.1500ms
+                        class="text-sm text-gray-600 me-3">
+                        Salvo.
+                    </div>
                     <button type="button" id="btn-salvar-dados-complementares"
                         class="ml-3 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         Salvar

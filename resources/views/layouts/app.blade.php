@@ -15,13 +15,14 @@
 
         {{-- jQuery JS --}}
         <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
+        
+        {{-- JS Mask --}}
+        <script src="{{ asset('js/jquery.mask.min.js') }}"></script>
 
         <!-- Select2 JS -->
         <script src="{{ asset('js/select2.min.js') }}"></script>
 
         
-
-
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 

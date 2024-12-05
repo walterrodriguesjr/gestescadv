@@ -1,3 +1,5 @@
+
+//INICIO acao salvar dados complementares
 $(document).ready(function () {
     $('#btn-salvar-dados-complementares').on('click', function () {
         // Obter os dados do formulário
@@ -22,8 +24,7 @@ $(document).ready(function () {
                     $('#cpf').val(response.data.user_cpf);
                     $('#celular').val(response.data.user_celular);
 
-                    // Exibir mensagem de sucesso
-                    alert('Dados complementares atualizados com sucesso!');
+                    window.dispatchEvent(new Event('salvo'));
                 } else {
                     // Exibir mensagem de erro
                     alert('Erro: ' + response.message);
@@ -36,3 +37,4 @@ $(document).ready(function () {
         });
     });
 });
+//FIM acao salvar dados complementares
