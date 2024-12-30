@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Rules\Cpf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ClienteController extends Controller
 {
@@ -33,9 +35,72 @@ class ClienteController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        //
+{
+    try {
+        // Validação dos dados
+        $validated = $request->validate([
+            'nome_completo' => 'required|string|min:3',
+            'cpf' => ['required', 'string', new Cpf],
+            'email' => 'required|email',
+            'celular' => 'required|string|min:14',
+            'telefone' => 'nullable|string',
+            'cep' => 'nullable|string',
+            'rua' => 'nullable|string',
+            'numero' => 'nullable|string',
+            'bairro' => 'nullable|string',
+            'estado' => 'nullable|string',
+            'cidade' => 'nullable|string',
+        ]);
+
+        // Recuperar o time atual do usuário logado
+        $teamId = Auth::user()->currentTeam->id;
+
+        // Verificar se o cliente já está associado ao time
+        $clienteExistente = Cliente::where('cliente_cpf', $validated['cpf'])
+            ->whereHas('teams', function ($query) use ($teamId) {
+                $query->where('teams.id', $teamId); // Especifica 'teams.id'
+            })->first();
+
+        if ($clienteExistente) {
+            return response()->json([
+                'message' => 'Este cliente já está cadastrado para o time atual.',
+            ], 409); // Código HTTP 409 (Conflito)
+        }
+
+        // Criar o cliente
+        $cliente = Cliente::create([
+            'cliente_nome_completo' => $validated['nome_completo'],
+            'cliente_cpf' => $validated['cpf'],
+            'cliente_email' => $validated['email'],
+            'cliente_celular' => $validated['celular'],
+            'cliente_telefone' => $validated['telefone'],
+            'cliente_cep' => $validated['cep'],
+            'cliente_rua' => $validated['rua'],
+            'cliente_numero' => $validated['numero'],
+            'cliente_bairro' => $validated['bairro'],
+            'cliente_estado' => $validated['estado'],
+            'cliente_cidade' => $validated['cidade'],
+        ]);
+
+        // Associar o cliente ao time atual
+        $cliente->teams()->attach($teamId);
+
+        return response()->json(['message' => 'Cliente cadastrado e vinculado ao time com sucesso!'], 201);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'message' => 'Erro na validação dos dados.',
+            'errors' => $e->errors(),
+        ], 422);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Ocorreu um erro ao processar a requisição.',
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
+
+
 
     /**
      * Display the specified resource.

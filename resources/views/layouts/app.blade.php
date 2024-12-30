@@ -12,6 +12,9 @@
 
         <!-- Select2 CSS -->
         <link rel="stylesheet" href="{{ asset('css/select2.min.css') }}">
+        
+        <!-- Toastr CSS -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 
         {{-- jQuery JS --}}
         <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
@@ -21,6 +24,10 @@
 
         <!-- Select2 JS -->
         <script src="{{ asset('js/select2.min.js') }}"></script>
+        
+        <!-- Toastr JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 
         
         <!-- Scripts -->

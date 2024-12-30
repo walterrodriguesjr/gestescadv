@@ -133,14 +133,126 @@ function carregarCidades(estado, callback) {
 // FIM carregamento de cidades com base no estado selecionado
 
 
-//INICIO salvar dados novo cliente
-
+// INICIO salvar dados novo cliente
 $("#buttonSalvarDadosNovoCliente").click(function (e) {
-    e.preventDefault();
-    
-});
+    e.preventDefault(); // Impede envio padrão
 
-//FIM salvar dados novo cliente
+    // Limpa mensagens de erro existentes
+    $(".error-message").remove();
+
+    let isValid = true; // Flag para determinar se o formulário é válido
+
+    // Validação do Nome Completo
+    const nomeCompleto = $("#clienteNomeCompleto").val();
+    if (!nomeCompleto || nomeCompleto.length < 3) {
+        isValid = false;
+        exibirErro("#clienteNomeCompleto", "O nome deve ter pelo menos 3 caracteres.");
+    }
+
+    // Validação do CPF
+    const cpf = $("#clienteCpf").val();
+    if (!cpf || !validarCPF(cpf)) {
+        isValid = false;
+        exibirErro("#clienteCpf", "Insira um CPF válido.");
+    }
+
+    // Validação do Email
+    const email = $("#clienteEmail").val();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+        isValid = false;
+        exibirErro("#clienteEmail", "Insira um email válido.");
+    }
+
+    // Validação do Celular
+    const celular = $("#clienteCelular").val();
+    if (!celular || celular.length < 14) {
+        isValid = false;
+        exibirErro("#clienteCelular", "Insira um número de celular válido.");
+    }
+
+    // Verifica se o formulário é válido
+    if (isValid) {
+        // Realiza o AJAX de envio
+        $.ajax({
+            type: "POST",
+            url: "/cliente", // Rota definida pelo resource (POST para store)
+            data: {
+                nome_completo: nomeCompleto,
+                cpf: cpf,
+                email: email,
+                celular: celular,
+                telefone: $("#clienteTelefone").val(),
+                cep: $("#clienteCep").val(),
+                rua: $("#clienteRua").val(),
+                numero: $("#clienteNumero").val(),
+                bairro: $("#clienteBairro").val(),
+                estado: $("#clienteEstado").val(),
+                cidade: $("#clienteCidade").val(),
+                _token: $('meta[name="csrf-token"]').attr('content') // CSRF Token
+            },
+            success: function (response) {
+                // Exibe uma mensagem de sucesso
+                toastr.success("Cliente cadastrado com sucesso!");
+
+                // Limpa o formulário
+                $("#formNovoCliente")[0].reset();
+                $(".select2").val(null).trigger("change"); // Reset select2
+            },
+            error: function (xhr) {
+                if (xhr.status === 409) {
+                    // Se o erro for de conflito (409), exibe a mensagem personalizada
+                    toastr.error("Este Cliente já está cadastrado na base de dados da sua empresa.");
+                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    // Exibe os erros retornados pela validação no backend
+                    const errors = xhr.responseJSON.errors;
+                    for (const key in errors) {
+                        if (errors.hasOwnProperty(key)) {
+                            exibirErro(`#${key}`, errors[key][0]);
+                        }
+                    }
+                } else {
+                    // Para outros erros, exibe a mensagem genérica
+                    toastr.error("Ocorreu um erro ao salvar os dados. Tente novamente.");
+                }
+            }
+        });
+    }
+});
+// FIM salvar dados novo cliente
+
+
+// INICIO Função para exibir mensagens de erro
+function exibirErro(inputSelector, mensagem) {
+    $(inputSelector).after(`<span class="error-message" style="color: red; font-size: 12px;">${mensagem}</span>`);
+    
+    // Remove a mensagem de erro ao começar a digitar
+    $(inputSelector).on("input", function () {
+        $(this).next(".error-message").remove();
+    });
+}
+// FIM Função para exibir mensagens de erro
+
+// INICIO Função para validar CPF
+function validarCPF(cpf) {
+    cpf = cpf.replace(/[^\d]+/g, '');
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+    
+    let soma = 0, resto;
+    for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpf.substring(9, 10))) return false;
+    
+    soma = 0;
+    for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpf.substring(10, 11))) return false;
+    
+    return true;
+}
+// FIM Função para validar CPF
 
 //INICIO uso de mascaras nos inputs do modal de cadastrar novo cliente
 $(document).ready(function () {
@@ -172,7 +284,6 @@ $(document).ready(function () {
         $('#clienteCep').mask('00000-000');
         
     });
-    
     //FIM uso de mascaras nos inputs do modal de cadastrar novo cliente
 
 

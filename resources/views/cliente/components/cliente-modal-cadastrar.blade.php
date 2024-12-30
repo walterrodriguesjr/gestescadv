@@ -1,3 +1,19 @@
+<style>
+    /* Estilo básico para mensagens de erro */
+label.error {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Destaca o campo com erro */
+input.error, select.error {
+    border-color: red;
+    background-color: #ffe6e6;
+}
+
+</style>
 
 <div class="modal fade" id="clienteModalCadastrar" tabindex="-1" aria-labelledby="clienteModalCadastrarLabel"
     aria-hidden="true">
@@ -9,12 +25,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form>
+                <form id="formNovoCliente">
                     <div class="row">
                         <div class="col-12 mb-3">
                             <label for="clienteNomeCompleto" class="col-form-label fw-normal">Nome Completo</label>
-                            <input type="text" class="form-control" id="clienteNomeCompleto"
-                                name="cliente_nome_completo" placeholder="Digite">
+                            <input type="text" class="form-control" id="clienteNomeCompleto" name="cliente_nome_completo" placeholder="Digite">
                         </div>
                     </div>
                     <div class="row">
@@ -72,11 +87,10 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i>
-                    Fechar</button>
-                <button type="button" class="btn btn-primary" id="buttonSalvarDadosNovoCliente"><i
-                        class="fas fa-check"></i> Salvar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Fechar</button>
+                <button type="button" class="btn btn-primary" id="buttonSalvarDadosNovoCliente"><i class="fas fa-check"></i> Salvar</button>
             </div>
+            
         </div>
     </div>
 </div>

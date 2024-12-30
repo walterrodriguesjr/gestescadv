@@ -24,6 +24,4 @@ Route::middleware([
     Route::resource('/cliente', ClienteController::class);
     Route::post('/usuario-user-data', [UsuarioUserDataController::class, 'CadastrarUsuarioUserData'])->name('usuario.user-data');
 
-/*     Route::get('/user/profile', [UsuarioUserDataController::class, 'show'])->name('user.profile');
- */
 });
