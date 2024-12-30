@@ -12,14 +12,24 @@
 
         <!-- Select2 CSS -->
         <link rel="stylesheet" href="{{ asset('css/select2.min.css') }}">
+        
+        <!-- Toastr CSS -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 
         {{-- jQuery JS --}}
         <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
+        
+        {{-- JS Mask --}}
+        <script src="{{ asset('js/jquery.mask.min.js') }}"></script>
 
         <!-- Select2 JS -->
         <script src="{{ asset('js/select2.min.js') }}"></script>
+        
+        <!-- Toastr JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 
+        
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -85,6 +95,7 @@
 
         <!-- AdminLTE Scripts -->
         <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
 
         @livewireScripts
     </body>

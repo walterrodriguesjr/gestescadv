@@ -19,6 +19,6 @@ export default defineConfig({
         },
     },
     optimizeDeps: {
-        include: ['jquery', 'admin-lte'], // Garante que AdminLTE e jQuery sejam otimizados
+        include: ['jquery', 'admin-lte', 'jquery-mask-plugin'], // Garante que AdminLTE e jQuery sejam otimizados
     },
 });

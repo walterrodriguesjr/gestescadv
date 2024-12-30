@@ -23,6 +23,7 @@
         "bootstrap": "^5.3.3",
         "datatables.net": "^2.1.8",
         "datatables.net-dt": "^2.1.8",
-        "jquery": "^3.7.1"
+        "jquery": "^3.7.1",
+        "jquery-mask-plugin": "^1.14.16"
     }
 }

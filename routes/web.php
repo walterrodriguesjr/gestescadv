@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ClienteUserDataController;
+use App\Http\Controllers\UsuarioUserDataController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Jetstream\Http\Controllers\Inertia\UserProfileController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -17,7 +20,8 @@ Route::middleware([
     })->name('dashboard');
 
     //clientes 
-Route::get('/view-cliente', [ClienteController::class, 'viewCliente'])->name('cliente/view_cliente');
+    Route::get('/view-cliente', [ClienteController::class, 'viewCliente'])->name('cliente/view_cliente');
+    Route::resource('/cliente', ClienteController::class);
+    Route::post('/usuario-user-data', [UsuarioUserDataController::class, 'CadastrarUsuarioUserData'])->name('usuario.user-data');
+
 });
-
-

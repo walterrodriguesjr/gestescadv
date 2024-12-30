@@ -45,4 +45,12 @@ class Team extends JetstreamTeam
             'personal_team' => 'boolean',
         ];
     }
+
+    /**
+     * Relacionamento muitos-para-muitos com Clientes.
+     */
+    public function clientes()
+    {
+        return $this->belongsToMany(Cliente::class, 'cliente_team')->withTimestamps();
+    }
 }
