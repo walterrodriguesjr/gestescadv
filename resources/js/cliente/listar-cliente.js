@@ -1,7 +1,7 @@
 let tabelaClientes; // Variável para a instância do DataTables
 
 
-function listarClientes(){
+function listarClientes() {
     if (!$.fn.DataTable.isDataTable("#tabelaClientes")) {
         // Inicializar DataTables
         tabelaClientes = $("#tabelaClientes").DataTable({
@@ -38,10 +38,34 @@ function listarClientes(){
                 url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json",
             },
             responsive: true,
-            searching: false,
-            dom: `<"row mb-3"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>
+            dom: `<"row mb-3"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6">>
                   <"table-responsive"tr>
                   <"row mt-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>`,
+            initComplete: function () {
+                // Capturar e mover a barra de pesquisa
+                const searchContainer = $("#tabelaClientes_filter"); // Captura o container original
+                const searchInput = searchContainer.find("input"); // Captura o input original
+
+                // Personalizar o input
+                searchInput.addClass("form-control").attr({
+                    id: "pesquisarCliente",
+                    placeholder: "Pesquise por nome ou cpf",
+                });
+
+                // Adicionar ícone de pesquisa ao lado
+                const customSearchGroup = $(`
+                    <div class="input-group">
+                        ${searchInput[0].outerHTML}
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    </div>
+                `);
+
+                // Substituir o campo de pesquisa customizado
+                $(".input-group").replaceWith(customSearchGroup);
+
+                // Remover o container padrão do DataTables
+                searchContainer.remove();
+            },
         });
     } else {
         // Recarregar os dados se a tabela já estiver inicializada
@@ -49,8 +73,9 @@ function listarClientes(){
     }
 }
 
-// Vincular a função ao escopo global
+// Disponibiliza a função no escopo global para reutilização
 window.listarClientes = listarClientes;
 
-/* chama a funcao que lista os clientes */
+// Inicializa o DataTables
 listarClientes();
+
