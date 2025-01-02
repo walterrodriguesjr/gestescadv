@@ -21,7 +21,7 @@ function listarClientes() {
                     searchable: false,
                     render: function (data, type, row) {
                         return `
-                            <button class="btn btn-info btn-sm" title="Visualizar Cliente">
+                            <button class="btn btn-info btn-sm" id="abrirModalVisualizarCliente" title="Visualizar Cliente" data-id="${row.id}">
                                 <i class="fas fa-eye"></i>
                             </button>
                             <button class="btn btn-success btn-sm" title="Editar Cliente">

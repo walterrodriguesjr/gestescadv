@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use App\Rules\Cpf;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -121,9 +122,14 @@ class ClienteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Cliente $cliente)
+    public function show($id)
     {
-        //
+        try {
+            $cliente = Cliente::findOrFail($id);
+            return response()->json($cliente);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Cliente não encontrado.'], 404);
+        }
     }
 
     /**
