@@ -9,11 +9,17 @@
 {{-- Inclui o modal de editar cliente--}}
 @include('cliente.components.cliente-modal-editar')
 
+{{-- Inclui o modal de deletar cliente--}}
+@include('cliente.components.cliente-modal-deletar')
+
 {{-- Carrega o script de cadastrar-cliente --}}
 @vite(['resources/js/cliente/cadastrar-cliente.js'])
 
 {{-- Carrega o script de cadastrar-cliente --}}
 @vite(['resources/js/cliente/editar-cliente.js'])
+
+{{-- Carrega o script de deletar-cliente --}}
+@vite(['resources/js/cliente/deletar-cliente.js'])
 
 {{-- Carrega o script de listar-cliente --}}
 @vite(['resources/js/cliente/listar-cliente.js'])

@@ -188,7 +188,21 @@ class ClienteController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Cliente $cliente)
-    {
-        //
+{
+    try {
+        // Exclui o cliente do banco de dados
+        $cliente->delete();
+
+        return response()->json([
+            'message' => 'Cliente deletado com sucesso!',
+        ], 200);
+    } catch (\Exception $e) {
+        // Trata qualquer erro que possa ocorrer
+        return response()->json([
+            'message' => 'Erro ao deletar o cliente.',
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
+
 }
