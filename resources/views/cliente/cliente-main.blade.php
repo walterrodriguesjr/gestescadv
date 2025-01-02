@@ -1,7 +1,10 @@
 @extends('layouts.app')
-{{-- Inclui o modal de cadastrar cliente--}}
 
+{{-- Inclui o modal de cadastrar cliente--}}
 @include('cliente.components.cliente-modal-cadastrar')
+
+{{-- Inclui o modal de cadastrar cliente--}}
+@include('cliente.components.cliente-modal-visualizar')
 
 {{-- Carrega o script de cadastrar-cliente --}}
 @vite(['resources/js/cliente/cadastrar-cliente.js'])
@@ -14,6 +17,9 @@
 
 {{-- Carrega o script de pesquisar-cliente --}}
 @vite(['resources/js/cliente/pesquisar-cliente.js'])
+
+{{-- Carrega o script de visualizar-cliente --}}
+@vite(['resources/js/cliente/visualizar-cliente.js'])
 
 @section('content')
 <div class="row justify-content-center align-items-center mb-3">
