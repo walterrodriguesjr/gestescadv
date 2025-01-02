@@ -9,13 +9,24 @@
 {{-- Carrega o script de listar-cliente --}}
 @vite(['resources/js/cliente/listar-cliente.js'])
 
+{{-- Carrega o script de limpar-cliente --}}
+@vite(['resources/js/cliente/limpar-cliente.js'])
+
+{{-- Carrega o script de pesquisar-cliente --}}
+@vite(['resources/js/cliente/pesquisar-cliente.js'])
+
 @section('content')
 <div class="row justify-content-center align-items-center mb-3">
     <div class="col-md-6">
         <div class="input-group">
-            <input type="text" class="form-control" id="buscarCliente" placeholder="Pesquise por nome ou cpf">
+            <input type="text" class="form-control" id="pesquisarCliente" placeholder="Pesquise por nome ou cpf">
             <span class="input-group-text"><i class="fas fa-search"></i></span>
         </div>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary" id="limparCliente">
+            <i class="fas fa-eraser"></i> Limpar Pesquisa
+        </button>
     </div>
     <div class="col-auto">
         <button class="btn btn-primary" id="abrirModalCadastrarCliente">
