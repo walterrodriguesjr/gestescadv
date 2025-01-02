@@ -198,6 +198,8 @@ $("#buttonSalvarDadosNovoCliente").click(function (e) {
                 // Limpa o formulário
                 $("#formNovoCliente")[0].reset();
                 $(".select2").val(null).trigger("change"); // Reset select2
+                $("#clienteModalCadastrar").modal("hide");
+                listarClientes();
             },
             error: function (xhr) {
                 if (xhr.status === 409) {

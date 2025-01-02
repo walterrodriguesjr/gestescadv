@@ -16,6 +16,9 @@
         <!-- Toastr CSS -->
         <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 
+        <!-- DataTables CSS -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+
         {{-- jQuery JS --}}
         <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
         
@@ -28,7 +31,8 @@
         <!-- Toastr JS -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
-
+         <!-- DataTables JS -->
+         <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
         
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -103,6 +107,11 @@
 
 <script>
     $(document).ready(function () {
+        // Inicialização do DataTables globalmente (se necessário)
+        if ($('.dataTable').length) {
+                    $('.dataTable').DataTable();
+                }
+                
     $('.nav-link[data-widget="pushmenu"]').on('click', function (e) {
         e.preventDefault();
         $('body').toggleClass('sidebar-collapse'); // Alterna a classe para recolher ou expandir o sidebar

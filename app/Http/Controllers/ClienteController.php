@@ -16,11 +16,27 @@ class ClienteController extends Controller
 
 }
     /**
-     * Display a listing of the resource.
+     * Listar todos os clientes relacionados ao Team do usuario logado.
      */
     public function index()
     {
-        //
+        try {
+            /* Recupera o ID do team atual do usuario logado */
+            $teamId = Auth::user()->currentTeam->id;
+         
+            /* Buscar todos os clientes associados ao ID contido em $teamId */
+            $clientes = Cliente::whereHas('teams', function ($query) use ($teamId) {
+                $query->where('cliente_team.team_id', $teamId); // Especifica a tabela pivot
+            })->get();
+         
+            //retornar todos os clientes localizados como JSON
+            return response()->json($clientes, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Ocorreu um erro ao buscar os clientes.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
