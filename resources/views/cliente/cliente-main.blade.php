@@ -6,8 +6,14 @@
 {{-- Inclui o modal de cadastrar cliente--}}
 @include('cliente.components.cliente-modal-visualizar')
 
+{{-- Inclui o modal de editar cliente--}}
+@include('cliente.components.cliente-modal-editar')
+
 {{-- Carrega o script de cadastrar-cliente --}}
 @vite(['resources/js/cliente/cadastrar-cliente.js'])
+
+{{-- Carrega o script de cadastrar-cliente --}}
+@vite(['resources/js/cliente/editar-cliente.js'])
 
 {{-- Carrega o script de listar-cliente --}}
 @vite(['resources/js/cliente/listar-cliente.js'])
