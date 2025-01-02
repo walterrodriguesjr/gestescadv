@@ -24,7 +24,7 @@ function listarClientes() {
                             <button class="btn btn-info btn-sm" id="abrirModalVisualizarCliente" title="Visualizar Cliente" data-id="${row.id}">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-success btn-sm" title="Editar Cliente">
+                            <button class="btn btn-success btn-sm" id="abrirModalEditarCliente" title="Editar Cliente" data-id="${row.id}">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <button class="btn btn-danger btn-sm" title="Excluir Cliente">

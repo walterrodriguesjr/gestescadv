@@ -144,9 +144,45 @@ class ClienteController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, Cliente $cliente)
-    {
-        //
+{
+    // Validação dos dados recebidos
+    $validatedData = $request->validate([
+        'nome_completo' => 'required|string|min:3',
+        'email' => 'nullable|email',
+        'celular' => 'nullable|string|min:10|max:15',
+        'telefone' => 'nullable|string|min:10|max:15',
+        'cep' => 'nullable|string|min:8|max:9',
+        'rua' => 'nullable|string|max:255',
+        'numero' => 'nullable|string|max:10',
+        'bairro' => 'nullable|string|max:255',
+        'estado' => 'nullable|string|size:2',
+        'cidade' => 'nullable|string|max:255',
+    ]);
+
+    try {
+        // Atualiza os dados do cliente no banco
+        $cliente->update([
+            'cliente_nome_completo' => $validatedData['nome_completo'],
+            'cliente_email' => $validatedData['email'],
+            'cliente_celular' => $validatedData['celular'],
+            'cliente_telefone' => $validatedData['telefone'],
+            'cliente_cep' => $validatedData['cep'],
+            'cliente_rua' => $validatedData['rua'],
+            'cliente_numero' => $validatedData['numero'],
+            'cliente_bairro' => $validatedData['bairro'],
+            'cliente_estado' => $validatedData['estado'],
+            'cliente_cidade' => $validatedData['cidade'],
+        ]);
+
+        return response()->json(['message' => 'Cliente atualizado com sucesso!'], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Erro ao atualizar o cliente.',
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
+
 
     /**
      * Remove the specified resource from storage.
