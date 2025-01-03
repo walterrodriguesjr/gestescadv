@@ -26,6 +26,12 @@
                         <p>Cliente</p>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{route('processo/view_processo')}}" class="nav-link">
+                        <i class="nav-icon fas fa-scale-balanced"></i>
+                        <p>Processo</p>
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>
