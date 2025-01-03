@@ -8,6 +8,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
+                <!-- Campo oculto para armazenar o ID do cliente -->
+                <input type="hidden" id="clienteIdDeletar" name="cliente_id_deletar">
+
                 <i class="fas fa-exclamation-circle text-danger" style="font-size: 3rem;"></i>
                 <h4 class="mt-3 text-danger fw-bold">Tem certeza que deseja deletar este cliente?</h4>
                 <p class="text-muted">Esta ação não pode ser desfeita e todos os dados associados a este cliente serão removidos permanentemente.</p>

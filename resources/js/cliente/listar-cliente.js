@@ -2,6 +2,14 @@ let tabelaClientes; // Variável para a instância do DataTables
 
 
 function listarClientes() {
+    const spinner = $("#listarSpinner");
+
+    // Exibe o spinner
+    spinner.removeClass("d-none");
+
+    // Marca o momento em que o spinner foi exibido
+    const startTime = Date.now();
+
     if (!$.fn.DataTable.isDataTable("#tabelaClientes")) {
         // Inicializar DataTables
         tabelaClientes = $("#tabelaClientes").DataTable({
@@ -10,6 +18,15 @@ function listarClientes() {
                 type: "GET",
                 dataType: "json",
                 dataSrc: "", // Array de dados simples
+                complete: function () {
+                    // Garante que o spinner fique visível pelo menos 2 segundos
+                    const elapsed = Date.now() - startTime;
+                    const delay = Math.max(0, 1000 - elapsed);
+
+                    setTimeout(() => {
+                        spinner.addClass("d-none");
+                    }, delay);
+                },
             },
             columns: [
                 { data: "cliente_nome_completo", title: "Nome Completo" },
@@ -43,8 +60,8 @@ function listarClientes() {
                   <"row mt-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>`,
             initComplete: function () {
                 // Capturar e mover a barra de pesquisa
-                const searchContainer = $("#tabelaClientes_filter"); // Captura o container original
-                const searchInput = searchContainer.find("input"); // Captura o input original
+                const searchContainer = $("#tabelaClientes_filter");
+                const searchInput = searchContainer.find("input");
 
                 // Personalizar o input
                 searchInput.addClass("form-control").attr({
@@ -67,11 +84,32 @@ function listarClientes() {
                 searchContainer.remove();
             },
         });
+
+        // Remove o spinner ao final do carregamento
+        tabelaClientes.on("xhr", function () {
+            const elapsed = Date.now() - startTime;
+            const delay = Math.max(0, 1000 - elapsed);
+
+            setTimeout(() => {
+                spinner.addClass("d-none");
+            }, delay);
+        });
     } else {
         // Recarregar os dados se a tabela já estiver inicializada
-        tabelaClientes.ajax.reload();
+        tabelaClientes.ajax.reload(null, false);
+
+        // Remove o spinner ao final do carregamento
+        tabelaClientes.on("xhr", function () {
+            const elapsed = Date.now() - startTime;
+            const delay = Math.max(0, 1000 - elapsed);
+
+            setTimeout(() => {
+                spinner.addClass("d-none");
+            }, delay);
+        });
     }
 }
+
 
 // Disponibiliza a função no escopo global para reutilização
 window.listarClientes = listarClientes;

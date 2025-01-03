@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use App\Rules\Cpf;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -187,15 +188,22 @@ class ClienteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Cliente $cliente)
+    public function destroy($id)
 {
     try {
+        // Busca o cliente pelo ID
+        $cliente = Cliente::findOrFail($id);
+
         // Exclui o cliente do banco de dados
         $cliente->delete();
 
         return response()->json([
             'message' => 'Cliente deletado com sucesso!',
         ], 200);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'message' => 'Cliente não encontrado.',
+        ], 404);
     } catch (\Exception $e) {
         // Trata qualquer erro que possa ocorrer
         return response()->json([
@@ -204,5 +212,6 @@ class ClienteController extends Controller
         ], 500);
     }
 }
+
 
 }

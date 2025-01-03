@@ -16,19 +16,20 @@ $("#abrirModalCadastrarCliente").click(function (e) {
 
 
 // INÍCIO preenchimento dinâmico dos dados de endereço com base no cep digitado, consulta API viacep
-$("#clienteCep").change(function (e) {
-    e.preventDefault();
-    let cep = $(this).val().replace(/\D/g, '');
+$("#clienteCep").on("input", function () {
+    let cep = $(this).val().replace(/\D/g, ''); // Remove caracteres não numéricos
 
     if (cep.length === 8) {
+        // Realiza a busca apenas se o CEP tiver 8 dígitos
         $.ajax({
             type: "GET",
             url: `https://viacep.com.br/ws/${cep}/json/`,
             dataType: "json",
             success: function (data) {
                 if (data.erro) {
-                    alert("CEP não localizado.");
+                    toastr.warning("CEP inexistente! Digite um CEP válido.");
                 } else {
+                    toastr.info("CEP localizado.");
                     $("#clienteRua").val(data.logradouro);
                     $("#clienteBairro").val(data.bairro);
 
@@ -49,14 +50,13 @@ $("#clienteCep").change(function (e) {
                 }
             },
             error: function () {
-                alert("Erro ao buscar o CEP. Tente novamente mais tarde.");
+                toastr.error("Erro ao buscar o CEP. Tente novamente mais tarde.");
             }
         });
-    } else {
-        alert("CEP inválido. Por favor, insira um CEP válido.");
     }
 });
 // FIM preenchimento dinâmico dos dados de endereço com base no cep digitado, consulta API viacep
+
 
 
 // INÍCIO configuração do Select2 para estado e cidade
@@ -173,6 +173,10 @@ $("#buttonSalvarDadosNovoCliente").click(function (e) {
 
     // Verifica se o formulário é válido
     if (isValid) {
+
+        // Exibe o spinner
+        $("#salvarSpinner").removeClass("d-none");
+
         // Realiza o AJAX de envio
         $.ajax({
             type: "POST",
@@ -200,8 +204,14 @@ $("#buttonSalvarDadosNovoCliente").click(function (e) {
                 $(".select2").val(null).trigger("change"); // Reset select2
                 $("#clienteModalCadastrar").modal("hide");
                 listarClientes();
+                // Remove o spinner após 1 segundos
+                setTimeout(() => {
+                    $("#salvarSpinner").addClass("d-none");
+                }, 1000);
             },
             error: function (xhr) {
+                // Remove o spinner imediatamente
+                $("#salvarSpinner").addClass("d-none");
                 if (xhr.status === 409) {
                     // Se o erro for de conflito (409), exibe a mensagem personalizada
                     toastr.error("Este Cliente já está cadastrado na base de dados da sua empresa.");

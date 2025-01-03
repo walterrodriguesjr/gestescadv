@@ -60,6 +60,9 @@ $("#salvarClienteEditar").click(function (e) {
         _token: $('meta[name="csrf-token"]').attr("content"), // CSRF Token
     };
 
+    // Exibe o spinner
+    $("#editarSpinner").removeClass("d-none");
+
     // Faz a requisição PUT para atualizar os dados do cliente
     $.ajax({
         type: "PUT",
@@ -71,8 +74,13 @@ $("#salvarClienteEditar").click(function (e) {
             // Fecha o modal e atualiza a tabela
             $("#clienteModalEditar").modal("hide");
             listarClientes();
+            // Remove o spinner após 1 segundos
+            setTimeout(() => {
+                $("#editarSpinner").addClass("d-none");
+            }, 1000);
         },
         error: function (xhr) {
+            $("#editarSpinner").addClass("d-none");
             if (xhr.responseJSON && xhr.responseJSON.errors) {
                 const errors = xhr.responseJSON.errors;
                 for (const key in errors) {
