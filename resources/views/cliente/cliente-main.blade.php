@@ -12,6 +12,18 @@
 {{-- Inclui o modal de deletar cliente--}}
 @include('cliente.components.cliente-modal-deletar')
 
+{{-- Inclui o spinner Salvando--}}
+@include('cliente.components.salvando-spinner')
+
+{{-- Inclui o spinner Editando--}}
+@include('cliente.components.editando-spinner')
+
+{{-- Inclui o spinner Deletando--}}
+@include('cliente.components.deletando-spinner')
+
+{{-- Inclui o spinner Listando--}}
+@include('cliente.components.listando-spinner')
+
 {{-- Carrega o script de cadastrar-cliente --}}
 @vite(['resources/js/cliente/cadastrar-cliente.js'])
 

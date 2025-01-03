@@ -15,6 +15,9 @@ $("#salvarClienteDeletar").click(function (e) {
 
     const clienteId = $("#clienteIdDeletar").val(); // Recupera o ID do cliente do campo oculto
 
+    // Exibe o spinner
+    $("#deletarSpinner").removeClass("d-none");
+
     // Faz a requisição DELETE para excluir o cliente
     $.ajax({
         type: "DELETE",
@@ -28,8 +31,13 @@ $("#salvarClienteDeletar").click(function (e) {
             // Fecha o modal e atualiza a tabela
             $("#clienteModalDeletar").modal("hide");
             listarClientes();
+            // Remove o spinner após 1 segundos
+            setTimeout(() => {
+                $("#deletarSpinner").addClass("d-none");
+            }, 1000);
         },
         error: function () {
+            $("#deletarSpinner").addClass("d-none");
             toastr.error("Erro ao deletar o cliente. Tente novamente.");
         },
     });
