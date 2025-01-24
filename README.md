@@ -13,10 +13,12 @@
 
 Este é um **template completo** para projetos Laravel 11, incluindo:
 
-- Autenticação de usuários (Login e Logout).
-- Recuperação de senha por e-mail.
-- Autenticação em dois fatores (2FA) com suporte a códigos enviados por e-mail.
-- Configuração pronta para uso com Docker e Laravel Sail.
+- **Sistema de login** com validação no frontend e backend.
+- **Limite de tentativas de login** para maior segurança.
+- **Recuperação de senha** com envio de link por e-mail.
+- **Verificação em 2 etapas (2FA)** por e-mail.
+- **Área principal** com dashboard baseado no **AdminLTE 3**.
+- **Área de gerenciamento de dados de usuário** totalmente funcional.
 
 ---
 
