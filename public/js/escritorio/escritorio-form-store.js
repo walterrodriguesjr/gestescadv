@@ -1,5 +1,4 @@
 $(document).ready(function () {
-
     const $estadoEscritorio = $("#estadoEscritorio");
     const $cidadeEscritorio = $("#cidadeEscritorio");
     const $cepEscritorio = $("#cepEscritorio");
@@ -7,19 +6,29 @@ $(document).ready(function () {
     const $bairroEscritorio = $("#bairroEscritorio");
     const $numeroEscritorio = $("#numeroEscritorio");
 
-    // Inicializa o Select2 nos selects
-    const initializeSelect2 = ($select, placeholder) => {
-        $select.select2({
-            placeholder: placeholder,
-            allowClear: true,
-            width: "100%", // Ajusta a largura
-            language: {
-                noResults: function () {
-                    return "Nenhum resultado encontrado";
-                }
-            },
+    // Inicializa Choices.js nos selects
+    function initializeChoices($select, placeholder) {
+        if ($select.data("choicesInstance")) {
+            $select.data("choicesInstance").destroy();
+        }
+        const choicesInstance = new Choices($select[0], {
+            searchPlaceholderValue: placeholder,
+            placeholderValue: placeholder,
+            removeItemButton: true,
+            shouldSort: false,
+            noResultsText: "Nenhum resultado encontrado",
+            noChoicesText: "Nenhuma opção disponível",
         });
-    };
+        $select.data("choicesInstance", choicesInstance);
+    }
+
+    // Define o valor selecionado no Choices.js
+    function setChoiceValue($select, value) {
+        const instance = $select.data("choicesInstance");
+        if (instance && value) {
+            instance.setChoiceByValue(value);
+        }
+    }
 
     // Máscaras
     $("#cnpjEscritorio").mask("00.000.000/0000-00");
@@ -37,180 +46,148 @@ $(document).ready(function () {
         $numeroEscritorio.val("");
         $estadoEscritorio.val("").trigger("change");
         $cidadeEscritorio.prop("disabled", true).empty().append('<option value="">Selecione uma cidade</option>');
-        initializeSelect2($cidadeEscritorio, "Selecione uma cidade");
+        initializeChoices($cidadeEscritorio, "Selecione uma cidade");
     }
 
-    // Função para carregar os estados
-    function carregarEstados() {
-        $.ajax({
-            url: "https://servicodados.ibge.gov.br/api/v1/localidades/estados",
-            type: "GET",
-            dataType: "json",
-            success: function (data) {
-                $estadoEscritorio.empty().append('<option value="">Selecione um estado</option>');
-                data.forEach(function (estado) {
-                    $estadoEscritorio.append(`<option value="${estado.sigla}">${estado.nome}</option>`);
-                });
-                initializeSelect2($estadoEscritorio, "Selecione um estado");
-            },
-            error: function () {
-                toastr.error("Erro ao carregar estados. Por favor, tente novamente.");
-            },
-        });
+    // Carregar estados via API do IBGE
+    async function carregarEstados() {
+        try {
+            const response = await $.ajax({
+                url: "https://servicodados.ibge.gov.br/api/v1/localidades/estados",
+                type: "GET",
+                dataType: "json",
+            });
+
+            $estadoEscritorio.empty().append('<option value="">Selecione um estado</option>');
+            response.forEach(estado => {
+                $estadoEscritorio.append(`<option value="${estado.sigla}">${estado.nome}</option>`);
+            });
+
+            initializeChoices($estadoEscritorio, "Selecione um estado");
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Erro",
+                text: "Erro ao carregar estados. Por favor, tente novamente.",
+            });
+        }
     }
 
-    // Função para carregar as cidades do estado selecionado
-    function carregarCidades(estadoSigla, cidadeSelecionada = null) {
+    // Carregar cidades ao selecionar um estado
+    async function carregarCidades(estadoSigla, cidadeSelecionada = null) {
         if (!estadoSigla) {
             $cidadeEscritorio.prop("disabled", true).empty().append('<option value="">Selecione uma cidade</option>');
-            initializeSelect2($cidadeEscritorio, "Selecione uma cidade");
+            initializeChoices($cidadeEscritorio, "Selecione uma cidade");
             return;
         }
 
-        $.ajax({
-            url: `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoSigla}/municipios`,
-            type: "GET",
-            dataType: "json",
-            success: function (data) {
-                $cidadeEscritorio.empty().append('<option value="">Selecione uma cidade</option>');
-                data.forEach(function (cidade) {
-                    $cidadeEscritorio.append(
-                        `<option value="${cidade.nome}" ${cidade.nome === cidadeSelecionada ? 'selected' : ''}>${cidade.nome}</option>`
-                    );
-                });
-                $cidadeEscritorio.prop("disabled", false);
-                initializeSelect2($cidadeEscritorio, "Selecione uma cidade");
-            },
-            error: function () {
-                toastr.error("Erro ao carregar cidades. Por favor, tente novamente.");
-            },
-        });
-    }
-
-    // Busca de endereço pelo CEP
-    $cepEscritorio.on("input", function () {
-        const cep = $(this).val().replace(/\D/g, ""); // Remove caracteres não numéricos
-
-        if (cep.length === 8) {
-            $.ajax({
-                url: `https://viacep.com.br/ws/${cep}/json/`,
+        try {
+            const response = await $.ajax({
+                url: `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoSigla}/municipios`,
                 type: "GET",
                 dataType: "json",
-                success: function (data) {
-                    if (data.erro) {
-                        toastr.warning("CEP não localizado. Digite um CEP válido.");
-                        limparEndereco();
-                        return;
-                    }
+            });
 
-                    $logradouroEscritorio.val(data.logradouro);
-                    $bairroEscritorio.val(data.bairro);
-                    $estadoEscritorio.val(data.uf).trigger("change");
-                    carregarCidades(data.uf, data.localidade);
+            $cidadeEscritorio.empty().append('<option value="">Selecione uma cidade</option>');
+            response.forEach(cidade => {
+                $cidadeEscritorio.append(`<option value="${cidade.nome}">${cidade.nome}</option>`);
+            });
 
-                    toastr.info("CEP localizado com sucesso!");
-                },
-                error: function () {
-                    toastr.error("Erro ao buscar o CEP. Por favor, tente novamente.");
-                    limparEndereco();
-                },
+            $cidadeEscritorio.prop("disabled", false);
+            initializeChoices($cidadeEscritorio, "Selecione uma cidade");
+
+            if (cidadeSelecionada) {
+                setChoiceValue($cidadeEscritorio, cidadeSelecionada);
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Erro",
+                text: "Erro ao carregar cidades. Por favor, tente novamente.",
             });
         }
-    });
+    }
 
-    // Limpa o endereço quando o CEP é apagado
-    $cepEscritorio.on("input", function () {
-        if ($(this).val().replace(/\D/g, "").length < 8) {
-            limparEndereco();
-        }
-    });
-
-    // Evento de mudança no select de estados
+    // Evento ao mudar estado
     $estadoEscritorio.on("change", function () {
-        const estadoSelecionado = $(this).val();
-        carregarCidades(estadoSelecionado);
+        carregarCidades($(this).val());
     });
 
-    // Carrega os estados ao iniciar
+    // Carregar estados ao iniciar
     carregarEstados();
 
-    // Desativa a validação padrão em campos não obrigatórios
-    $("#cnpjEscritorio, #telefoneEscritorio, #cepEscritorio, #logradouroEscritorio, #numeroEscritorio, #bairroEscritorio").removeAttr("required");
+    // Salvar dados do escritório
+    $("#buttonSalvarDadosEscritorio").click(async function (e) {
+        e.preventDefault();
 
-    // Validação do formulário
-    $("#dados-escritorio-form").validate({
-        rules: {
-            nome_escritorio: { required: true },
-            email_escritorio: { required: true, email: true },
-            celular_escritorio: { required: true, minlength: 14, maxlength: 15 },
-        },
-        messages: {
-            nome_escritorio: { required: "O nome do escritório é obrigatório." },
-            email_escritorio: {
-                required: "O email é obrigatório.",
-                email: "Digite um email válido.",
-            },
-            celular_escritorio: {
-                required: "O celular é obrigatório.",
-                minlength: "Digite um celular válido.",
-                maxlength: "Digite um celular válido.",
-            },
-        },
-        submitHandler: function (form) {
-            alert("Formulário validado com sucesso!");
-            form.submit();
-        },
-    });
+        if (!$("#dados-escritorio-form").valid()) {
+            Swal.fire({ icon: "warning", title: "Atenção", text: "Preencha todos os campos obrigatórios." });
+            return;
+        }
 
-    $(document).ready(function () {
-        $(document).ready(function () {
-            $("#buttonSalvarDadosEscritorio").click(function (e) {
-                e.preventDefault();
-
-                if ($("#dados-escritorio-form").valid()) {
-                    toastr.info("Salvando dados...");
-
-                    const formData = {
-                        nome_escritorio: $("#nomeEscritorio").val(),
-                        cnpj_escritorio: $("#cnpjEscritorio").val(),
-                        telefone_escritorio: $("#telefoneEscritorio").val(),
-                        celular_escritorio: $("#celularEscritorio").val(),
-                        email_escritorio: $("#emailEscritorio").val(),
-                        cep_escritorio: $("#cepEscritorio").val(),
-                        logradouro_escritorio: $("#logradouroEscritorio").val(),
-                        numero_escritorio: $("#numeroEscritorio").val(),
-                        bairro_escritorio: $("#bairroEscritorio").val(),
-                        estado_escritorio: $("#estadoEscritorio").val(),
-                        cidade_escritorio: $("#cidadeEscritorio").val(),
-                        _token: csrfToken
-                    };
-
-                    $.ajax({
-                        url: escritorioStoreUrl, // Usa a variável definida no Blade
-                        type: "POST",
-                        data: formData,
-                        headers: { "X-CSRF-TOKEN": csrfToken },
-                        success: function (response) {
-                            toastr.success(response.message);
-                        },
-                        error: function (xhr) {
-                            if (xhr.status === 422) {
-                                const errors = xhr.responseJSON.errors;
-                                Object.keys(errors).forEach(function (key) {
-                                    toastr.error(errors[key]);
-                                });
-                            } else if (xhr.status === 400) {
-                                toastr.warning(xhr.responseJSON.message); // Mensagem de usuário já tem escritório
-                            } else {
-                                toastr.error("Erro ao salvar os dados. Por favor, tente novamente.");
-                            }
-                        }
-                    });
-                } else {
-                    toastr.warning("Preencha todos os campos obrigatórios.");
-                }
-            });
+        let loadingSwal = Swal.fire({
+            title: "Salvando...",
+            text: "Aguarde enquanto seus dados estão sendo atualizados.",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
         });
-    });
 
+        let requestStartTime = new Date().getTime();
+        let minWaitTime = 1500; // Tempo mínimo de exibição do spinner (1,5 segundos)
+        let maxWaitTime = 10000; // Tempo máximo de espera (10 segundos)
+        let timeoutReached = false;
+
+        let timeout = setTimeout(() => {
+            timeoutReached = true;
+            Swal.close();
+            Swal.fire({
+                icon: "error",
+                title: "Erro",
+                text: "A requisição demorou muito para responder. Tente novamente.",
+                confirmButtonText: "<i class='fas fa-check'></i> OK"
+            });
+        }, maxWaitTime);
+
+        const formData = {
+            nome_escritorio: $("#nomeEscritorio").val(),
+            cnpj_escritorio: $("#cnpjEscritorio").val(),
+            telefone_escritorio: $("#telefoneEscritorio").val(),
+            celular_escritorio: $("#celularEscritorio").val(),
+            email_escritorio: $("#emailEscritorio").val(),
+            cep_escritorio: $("#cepEscritorio").val(),
+            logradouro_escritorio: $("#logradouroEscritorio").val(),
+            numero_escritorio: $("#numeroEscritorio").val(),
+            bairro_escritorio: $("#bairroEscritorio").val(),
+            estado_escritorio: $("#estadoEscritorio").val(),
+            cidade_escritorio: $("#cidadeEscritorio").val(),
+            _token: csrfToken,
+        };
+
+        try {
+            const response = await $.post(escritorioStoreUrl, formData);
+            clearTimeout(timeout);
+            if (timeoutReached) return;
+
+            let requestEndTime = new Date().getTime();
+            let elapsedTime = requestEndTime - requestStartTime;
+
+            setTimeout(() => {
+                Swal.close();
+                Swal.fire({ icon: "success", title: "Sucesso!", text: response.message });
+            }, Math.max(minWaitTime - elapsedTime, 0));
+        } catch (error) {
+            clearTimeout(timeout);
+            if (timeoutReached) return;
+
+            Swal.fire({
+                icon: "error",
+                title: "Erro",
+                text: error.responseJSON.message || "Erro ao salvar os dados.",
+            });
+        }
+    });
 });
