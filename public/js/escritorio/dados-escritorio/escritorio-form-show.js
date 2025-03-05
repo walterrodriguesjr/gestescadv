@@ -2,7 +2,6 @@ $(document).ready(function () {
     const $estadoEscritorio = $("#estadoEscritorio");
     const $cidadeEscritorio = $("#cidadeEscritorio");
 
-    // Inicializa Choices.js no select
     function initializeChoices($select, placeholder) {
         if ($select.data('choicesInstance')) {
             $select.data('choicesInstance').destroy();
@@ -20,7 +19,6 @@ $(document).ready(function () {
         $select.data('choicesInstance', choicesInstance);
     }
 
-    // Define o valor selecionado no Choices.js
     function setChoiceValue($select, value) {
         const instance = $select.data('choicesInstance');
         if (instance && value) {
@@ -28,8 +26,7 @@ $(document).ready(function () {
         }
     }
 
-    // Carrega os estados e inicializa Choices.js
-    async function carregarEstados() {
+    async function carregarEstados(estadoSelecionado = null, cidadeSelecionada = null) {
         try {
             const response = await $.getJSON("https://servicodados.ibge.gov.br/api/v1/localidades/estados");
 
@@ -39,7 +36,15 @@ $(document).ready(function () {
             });
 
             initializeChoices($estadoEscritorio, "Selecione um estado");
+
+            if (estadoSelecionado) {
+                setTimeout(() => {
+                    setChoiceValue($estadoEscritorio, estadoSelecionado);
+                    carregarCidades(estadoSelecionado, cidadeSelecionada);
+                }, 300);
+            }
         } catch (error) {
+            console.error("❌ Erro ao carregar estados:", error);
             Swal.fire({
                 icon: "error",
                 title: "Erro",
@@ -48,7 +53,6 @@ $(document).ready(function () {
         }
     }
 
-    // Carrega as cidades com base no estado selecionado
     async function carregarCidades(estadoSigla, cidadeSelecionada = null) {
         try {
             if (!estadoSigla) {
@@ -58,7 +62,6 @@ $(document).ready(function () {
             }
 
             const response = await $.getJSON(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoSigla}/municipios`);
-
             $cidadeEscritorio.empty().append('<option value="">Selecione uma cidade</option>');
             response.forEach(cidade => {
                 $cidadeEscritorio.append(`<option value="${cidade.nome}">${cidade.nome}</option>`);
@@ -66,7 +69,6 @@ $(document).ready(function () {
 
             initializeChoices($cidadeEscritorio, "Selecione uma cidade");
 
-            // Define a cidade previamente salva
             if (cidadeSelecionada) {
                 setTimeout(() => {
                     setChoiceValue($cidadeEscritorio, cidadeSelecionada);
@@ -75,6 +77,7 @@ $(document).ready(function () {
 
             $cidadeEscritorio.prop("disabled", false);
         } catch (error) {
+            console.error("❌ Erro ao carregar cidades:", error);
             Swal.fire({
                 icon: "error",
                 title: "Erro",
@@ -83,19 +86,19 @@ $(document).ready(function () {
         }
     }
 
-    // Carrega os dados do escritório e preenche os campos
     async function carregarDadosEscritorio() {
-        if (!escritorioShowUrl) {
-            Swal.fire({
-                icon: "warning",
-                title: "Aviso",
-                text: "Nenhum escritório cadastrado.",
-            });
+        if (!escritorioShowUrl || escritorioShowUrl === "null") {
+            console.warn("⚠️ Nenhuma URL de escritório definida.");
             return;
         }
 
         try {
-            const response = await $.get(escritorioShowUrl, { headers: { "X-CSRF-TOKEN": csrfToken } });
+            const response = await $.ajax({
+                type: "GET",
+                url: escritorioShowUrl,
+                dataType: "json",
+                headers: { "X-CSRF-TOKEN": csrfToken }
+            });
 
             if (response.success) {
                 const dados = response.dados;
@@ -110,39 +113,25 @@ $(document).ready(function () {
                 $("#numeroEscritorio").val(dados.numero_escritorio);
                 $("#bairroEscritorio").val(dados.bairro_escritorio);
 
-                // Aguarda carregar estados e só depois define o estado e cidade
-                await carregarEstados();
-
-                if (dados.estado_escritorio) {
-                    setChoiceValue($estadoEscritorio, dados.estado_escritorio);
-
-                    // Aguarda carregar cidades antes de definir a selecionada
-                    setTimeout(async () => {
-                        await carregarCidades(dados.estado_escritorio, dados.cidade_escritorio);
-                    }, 500);
-                }
+                await carregarEstados(dados.estado_escritorio, dados.cidade_escritorio);
             } else {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Aviso",
-                    text: "Nenhum escritório cadastrado.",
-                });
+                console.warn("⚠️ Nenhum escritório cadastrado.");
             }
         } catch (error) {
-            Swal.fire({
-                icon: "error",
-                title: "Erro",
-                text: "Erro ao carregar os dados do escritório.",
-            });
+            console.error("❌ Erro ao carregar escritório:", error);
         }
     }
 
+    // (Opcional) Disponibiliza a função de show globalmente
+    window.carregarDadosEscritorioGlobal = carregarDadosEscritorio;
+
     // Evento de mudança no select de estados
     $estadoEscritorio.on("change", function () {
-        const estadoSelecionado = $(this).val();
-        carregarCidades(estadoSelecionado);
+        carregarCidades($(this).val());
     });
 
-    // Chama o carregamento de dados do escritório ao iniciar
-    carregarDadosEscritorio();
+    // Chama a função para carregar os dados, caso já exista um ID
+    if (escritorioId) {
+        carregarDadosEscritorio();
+    }
 });

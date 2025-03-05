@@ -6,7 +6,9 @@ $(document).ready(function () {
     const $bairroEscritorio = $("#bairroEscritorio");
     const $numeroEscritorio = $("#numeroEscritorio");
 
-    // Inicializa Choices.js nos selects
+    const $buttonSalvar = $("#buttonSalvarDadosEscritorio");
+    const $buttonAtualizar = $("#buttonAtualizarDadosEscritorio");
+
     function initializeChoices($select, placeholder) {
         if ($select.data("choicesInstance")) {
             $select.data("choicesInstance").destroy();
@@ -22,47 +24,47 @@ $(document).ready(function () {
         $select.data("choicesInstance", choicesInstance);
     }
 
-    // Define o valor selecionado no Choices.js
-    function setChoiceValue($select, value) {
-        const instance = $select.data("choicesInstance");
-        if (instance && value) {
-            instance.setChoiceByValue(value);
-        }
-    }
-
     // Máscaras
     $("#cnpjEscritorio").mask("00.000.000/0000-00");
     $("#telefoneEscritorio").mask("(00) 0000-0000");
     $("#celularEscritorio").mask("(00) 00000-0000");
     $("#cepEscritorio").mask("00000-000");
 
-    // Desabilita o select de cidade inicialmente
-    $cidadeEscritorio.prop("disabled", true);
+    // Validação
+    $("#dados-escritorio-form").validate({
+        rules: {
+            nome_escritorio: { required: true, minlength: 3 },
+            email_escritorio: { required: true, email: true },
+            celular_escritorio: { required: true, minlength: 14, maxlength: 15 },
+        },
+        messages: {
+            nome_escritorio: {
+                required: "O nome do escritório é obrigatório.",
+                minlength: "O nome deve ter no mínimo 3 caracteres."
+            },
+            email_escritorio: {
+                required: "O email é obrigatório.",
+                email: "Digite um email válido."
+            },
+            celular_escritorio: {
+                required: "O celular é obrigatório.",
+                minlength: "Digite um celular válido.",
+                maxlength: "Digite um celular válido."
+            }
+        },
+        errorPlacement: function (error, element) {
+            error.addClass('text-danger small');
+            error.insertAfter(element);
+        }
+    });
 
-    // Função para limpar os campos de endereço
-    function limparEndereco() {
-        $logradouroEscritorio.val("");
-        $bairroEscritorio.val("");
-        $numeroEscritorio.val("");
-        $estadoEscritorio.val("").trigger("change");
-        $cidadeEscritorio.prop("disabled", true).empty().append('<option value="">Selecione uma cidade</option>');
-        initializeChoices($cidadeEscritorio, "Selecione uma cidade");
-    }
-
-    // Carregar estados via API do IBGE
     async function carregarEstados() {
         try {
-            const response = await $.ajax({
-                url: "https://servicodados.ibge.gov.br/api/v1/localidades/estados",
-                type: "GET",
-                dataType: "json",
-            });
-
+            const response = await $.getJSON("https://servicodados.ibge.gov.br/api/v1/localidades/estados");
             $estadoEscritorio.empty().append('<option value="">Selecione um estado</option>');
             response.forEach(estado => {
                 $estadoEscritorio.append(`<option value="${estado.sigla}">${estado.nome}</option>`);
             });
-
             initializeChoices($estadoEscritorio, "Selecione um estado");
         } catch (error) {
             Swal.fire({
@@ -73,8 +75,7 @@ $(document).ready(function () {
         }
     }
 
-    // Carregar cidades ao selecionar um estado
-    async function carregarCidades(estadoSigla, cidadeSelecionada = null) {
+    async function carregarCidades(estadoSigla) {
         if (!estadoSigla) {
             $cidadeEscritorio.prop("disabled", true).empty().append('<option value="">Selecione uma cidade</option>');
             initializeChoices($cidadeEscritorio, "Selecione uma cidade");
@@ -82,23 +83,13 @@ $(document).ready(function () {
         }
 
         try {
-            const response = await $.ajax({
-                url: `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoSigla}/municipios`,
-                type: "GET",
-                dataType: "json",
-            });
-
+            const response = await $.getJSON(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoSigla}/municipios`);
             $cidadeEscritorio.empty().append('<option value="">Selecione uma cidade</option>');
             response.forEach(cidade => {
                 $cidadeEscritorio.append(`<option value="${cidade.nome}">${cidade.nome}</option>`);
             });
-
             $cidadeEscritorio.prop("disabled", false);
             initializeChoices($cidadeEscritorio, "Selecione uma cidade");
-
-            if (cidadeSelecionada) {
-                setChoiceValue($cidadeEscritorio, cidadeSelecionada);
-            }
         } catch (error) {
             Swal.fire({
                 icon: "error",
@@ -108,16 +99,11 @@ $(document).ready(function () {
         }
     }
 
-    // Evento ao mudar estado
     $estadoEscritorio.on("change", function () {
         carregarCidades($(this).val());
     });
 
-    // Carregar estados ao iniciar
-    carregarEstados();
-
-    // Salvar dados do escritório
-    $("#buttonSalvarDadosEscritorio").click(async function (e) {
+    $buttonSalvar.click(async function (e) {
         e.preventDefault();
 
         if (!$("#dados-escritorio-form").valid()) {
@@ -125,20 +111,9 @@ $(document).ready(function () {
             return;
         }
 
-        let loadingSwal = Swal.fire({
-            title: "Salvando...",
-            text: "Aguarde enquanto seus dados estão sendo atualizados.",
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            showConfirmButton: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
         let requestStartTime = new Date().getTime();
-        let minWaitTime = 1500; // Tempo mínimo de exibição do spinner (1,5 segundos)
-        let maxWaitTime = 10000; // Tempo máximo de espera (10 segundos)
+        let minWaitTime = 1500;
+        let maxWaitTime = 10000;
         let timeoutReached = false;
 
         let timeout = setTimeout(() => {
@@ -148,22 +123,30 @@ $(document).ready(function () {
                 icon: "error",
                 title: "Erro",
                 text: "A requisição demorou muito para responder. Tente novamente.",
-                confirmButtonText: "<i class='fas fa-check'></i> OK"
             });
         }, maxWaitTime);
 
+        Swal.fire({
+            title: "Cadastrando...",
+            text: "Aguarde enquanto os dados estão sendo salvos.",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
         const formData = {
             nome_escritorio: $("#nomeEscritorio").val(),
-            cnpj_escritorio: $("#cnpjEscritorio").val(),
-            telefone_escritorio: $("#telefoneEscritorio").val(),
+            cnpj_escritorio: $("#cnpjEscritorio").val() || null,
+            telefone_escritorio: $("#telefoneEscritorio").val() || null,
             celular_escritorio: $("#celularEscritorio").val(),
             email_escritorio: $("#emailEscritorio").val(),
-            cep_escritorio: $("#cepEscritorio").val(),
-            logradouro_escritorio: $("#logradouroEscritorio").val(),
-            numero_escritorio: $("#numeroEscritorio").val(),
-            bairro_escritorio: $("#bairroEscritorio").val(),
-            estado_escritorio: $("#estadoEscritorio").val(),
-            cidade_escritorio: $("#cidadeEscritorio").val(),
+            cep_escritorio: $("#cepEscritorio").val() || null,
+            logradouro_escritorio: $("#logradouroEscritorio").val() || null,
+            numero_escritorio: $("#numeroEscritorio").val() || null,
+            bairro_escritorio: $("#bairroEscritorio").val() || null,
+            estado_escritorio: $("#estadoEscritorio").val() || null,
+            cidade_escritorio: $("#cidadeEscritorio").val() || null,
             _token: csrfToken,
         };
 
@@ -177,17 +160,48 @@ $(document).ready(function () {
 
             setTimeout(() => {
                 Swal.close();
-                Swal.fire({ icon: "success", title: "Sucesso!", text: response.message });
+                Swal.fire({
+                    icon: "success",
+                    title: "Sucesso!",
+                    text: response.message
+                });
+
+                // Oculta o botão de salvar e exibe o de atualizar
+                $buttonSalvar.hide();
+                $buttonAtualizar.show();
             }, Math.max(minWaitTime - elapsedTime, 0));
+
+            // Se o back-end retornou "dados.id"
+            if (response.dados && response.dados.id) {
+                escritorioId = response.dados.id;
+            
+                // Substitui na string "template"
+                escritorioUpdateUrl = escritorioUpdateTemplate.replace(':id', escritorioId);
+                escritorioShowUrl   = escritorioShowTemplate.replace(':id', escritorioId);
+
+                // Se quiser recarregar dados na tela imediatamente (opcional)
+                if (typeof carregarDadosEscritorioGlobal === 'function') {
+                    await carregarDadosEscritorioGlobal();
+                }
+            } else {
+                // ⚠️ Se não vier "dados.id", cai no fallback (caso queira)
+                console.warn("⚠️ O store não retornou 'dados.id'. Botão de update vai falhar se não houver fallback.");
+            }
+
         } catch (error) {
             clearTimeout(timeout);
             if (timeoutReached) return;
 
-            Swal.fire({
-                icon: "error",
-                title: "Erro",
-                text: error.responseJSON.message || "Erro ao salvar os dados.",
-            });
+            console.error("❌ Erro no POST store:", error);
+
+            let errorMessage = "Erro ao salvar os dados.";
+            if (error.status === 422) {
+                const errors = error.responseJSON.errors;
+                errorMessage = Object.values(errors).join("\n");
+            }
+            Swal.fire({ icon: "error", title: "Erro", text: errorMessage });
         }
     });
+
+    carregarEstados();
 });

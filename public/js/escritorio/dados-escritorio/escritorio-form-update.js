@@ -24,7 +24,6 @@ $(document).ready(function () {
         $select.data("choicesInstance", choicesInstance);
     }
 
-    // Define valor no Choices.js corretamente
     function setChoiceValue($select, value) {
         const instance = $select.data("choicesInstance");
         if (instance && value) {
@@ -32,7 +31,6 @@ $(document).ready(function () {
         }
     }
 
-    // Carregar cidades ao selecionar um estado
     async function carregarCidades(estadoSigla, cidadeSelecionada = null) {
         if (!estadoSigla) {
             $cidadeEscritorio.prop("disabled", true).empty().append('<option value="">Selecione uma cidade</option>');
@@ -68,10 +66,8 @@ $(document).ready(function () {
     // Busca CEP e preenche os campos automaticamente
     $cepEscritorio.on("input", function () {
         const cep = $(this).val().replace(/\D/g, "");
-
         if (cep.length === 8 && cep !== ultimoCepConsultado) {
             ultimoCepConsultado = cep;
-
             $.ajax({
                 url: `https://viacep.com.br/ws/${cep}/json/`,
                 type: "GET",
@@ -82,11 +78,9 @@ $(document).ready(function () {
                         limparEndereco();
                         return;
                     }
-
                     $logradouroEscritorio.val(data.logradouro);
                     $bairroEscritorio.val(data.bairro);
                     setChoiceValue($estadoEscritorio, data.uf);
-
                     setTimeout(() => {
                         carregarCidades(data.uf, data.localidade);
                     }, 500);
@@ -99,7 +93,6 @@ $(document).ready(function () {
         }
     });
 
-    // Função para limpar os campos de endereço
     function limparEndereco() {
         $logradouroEscritorio.val("");
         $bairroEscritorio.val("");
@@ -108,19 +101,52 @@ $(document).ready(function () {
         $cidadeEscritorio.prop("disabled", true).empty().append('<option value="">Selecione uma cidade</option>');
     }
 
-    // Evento ao mudar estado manualmente
     $estadoEscritorio.on("change", function () {
         carregarCidades($(this).val());
     });
 
-    // Inicializa Choices.js
     initializeChoices($estadoEscritorio, "Selecione um estado");
     initializeChoices($cidadeEscritorio, "Selecione uma cidade");
+
+    // ───────────────────────────────────────────────────────────────────
+    // ⚠️ NOVA FUNÇÃO: carrega o ID do escritório via show, se estiver faltando
+    // ───────────────────────────────────────────────────────────────────
+    async function obterEscritorioIdSeNecessario() {
+        // Se já existir 'escritorioId' e 'escritorioUpdateUrl', não faz nada
+        if (escritorioId && escritorioUpdateUrl && escritorioUpdateUrl !== "null") {
+            return;
+        }
+    
+        // Se não houver URL de show, não tem o que fazer
+        if (!escritorioShowUrl || escritorioShowUrl === "null") {
+            return;
+        }
+        
+        try {
+            const response = await $.ajax({
+                url: escritorioShowUrl,
+                type: "GET",
+                dataType: "json",
+                headers: { "X-CSRF-TOKEN": csrfToken }
+            });
+    
+            if (response.success && response.dados) {
+                escritorioId = response.dados.id;
+                escritorioUpdateUrl = "{{ route('dados-escritorio.update', ':id') }}".replace(':id', escritorioId);
+            }
+        } catch (err) {
+        }
+    }
+    
 
     // 🔥 **Corrigindo o problema do botão de atualização** 🔥
     $(document).off("click", "#buttonAtualizarDadosEscritorio").on("click", "#buttonAtualizarDadosEscritorio", async function (e) {
         e.preventDefault();
 
+        // 1) Garante que temos o ID do escritório (via GET se necessário)
+        await obterEscritorioIdSeNecessario();
+
+        // 3) Se não existir URL de update, significa que não há ID definido
         if (!escritorioUpdateUrl) {
             Swal.fire({
                 icon: "error",
@@ -130,6 +156,7 @@ $(document).ready(function () {
             return;
         }
 
+        // 4) Validação do formulário
         if (!$("#dados-escritorio-form").valid()) {
             Swal.fire({
                 icon: "warning",
@@ -198,17 +225,16 @@ $(document).ready(function () {
                     text: "Dados do escritório atualizados com sucesso!",
                 });
             }, Math.max(minWaitTime - elapsedTime, 0));
+
         } catch (error) {
             clearTimeout(timeout);
             if (timeoutReached) return;
 
             let errorMessage = "Erro ao atualizar os dados. Por favor, tente novamente.";
-
             if (error.status === 422) {
                 const errors = error.responseJSON.errors;
                 errorMessage = Object.values(errors).join("\n");
             }
-
             Swal.fire({
                 icon: "error",
                 title: "Erro",
@@ -216,5 +242,4 @@ $(document).ready(function () {
             });
         }
     });
-
 });

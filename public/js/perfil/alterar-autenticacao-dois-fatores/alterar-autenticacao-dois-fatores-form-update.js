@@ -49,8 +49,24 @@ $(document).ready(function () {
             _token: csrfToken
         };
 
+        // Define os tempos de espera mínimo e máximo
+        let requestStartTime = new Date().getTime();
+        let minWaitTime = 1500; // Tempo mínimo do spinner (1.5 segundos)
+        let maxWaitTime = 10000; // Tempo máximo antes de erro (10 segundos)
+        let timeoutReached = false;
+
+        let timeout = setTimeout(() => {
+            timeoutReached = true;
+            Swal.close();
+            Swal.fire({
+                icon: "error",
+                title: "Erro",
+                text: "A requisição demorou muito para responder. Tente novamente.",
+            });
+        }, maxWaitTime);
+
         // Exibe o SweetAlert de carregamento
-        let loadingSwal = Swal.fire({
+        Swal.fire({
             title: "Atualizando autenticação...",
             text: "Aguarde enquanto sua configuração de segurança está sendo atualizada.",
             allowOutsideClick: false,
@@ -61,17 +77,17 @@ $(document).ready(function () {
             }
         });
 
-        let requestStartTime = new Date().getTime(); // Marca o tempo de início da requisição
-
         $.ajax({
             url: "/atualizar-2fa",
             type: "POST",
             data: formData,
             headers: { "X-CSRF-TOKEN": csrfToken },
             success: function (response) {
+                clearTimeout(timeout); // Cancela o timeout se a resposta chegou
+                if (timeoutReached) return; // Se já chegou no timeout, não faz nada
+
                 let requestEndTime = new Date().getTime();
                 let elapsedTime = requestEndTime - requestStartTime;
-                let minWaitTime = 1000; // Tempo mínimo de exibição do spinner (1 segundo)
 
                 setTimeout(() => {
                     Swal.close(); // Fecha o alerta de carregamento após tempo mínimo
@@ -83,9 +99,12 @@ $(document).ready(function () {
                     });
 
                     atualizarMensagem(); // Atualiza a mensagem na interface
-                }, Math.max(minWaitTime - elapsedTime, 0));
+                }, Math.max(minWaitTime - elapsedTime, 0)); // Garante tempo mínimo do spinner
             },
             error: function () {
+                clearTimeout(timeout);
+                if (timeoutReached) return;
+
                 let requestEndTime = new Date().getTime();
                 let elapsedTime = requestEndTime - requestStartTime;
 
@@ -97,7 +116,7 @@ $(document).ready(function () {
                         text: "Erro ao atualizar configuração de segurança.",
                         confirmButtonText: "<i class='fas fa-check'></i> OK"
                     });
-                }, Math.max(minWaitTime - elapsedTime, 0));
+                }, Math.max(minWaitTime - elapsedTime, 0)); // Garante tempo mínimo do spinner
             }
         });
     });

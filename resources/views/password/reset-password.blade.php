@@ -28,9 +28,13 @@
                                     value="{{ $email ?? old('email') }}" 
                                     required 
                                     autofocus>
-                                @error('email')
+                                    @error('email')
                                     <div class="invalid-feedback">
-                                        {{ $message }}
+                                        @if ($message === 'This password reset token is invalid.')
+                                            O link de redefinição de senha expirou ou é inválido. Solicite um novo link.
+                                        @else
+                                            {{ $message }}
+                                        @endif
                                     </div>
                                 @enderror
                             </div>

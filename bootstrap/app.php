@@ -45,6 +45,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
             'two-factor.verified' => \App\Http\Middleware\EnsureTwoFactorIsVerified::class,
+            'permissao_escritorio' => \App\Http\Middleware\PermissaoEscritorio::class,
+            'usuario.ativo' => \App\Http\Middleware\VerificaUsuarioAtivo::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

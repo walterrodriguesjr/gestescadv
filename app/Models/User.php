@@ -14,7 +14,6 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-
     protected $fillable = [
         'name',
         'email',
@@ -23,6 +22,7 @@ class User extends Authenticatable
         'two_factor_type',
         'two_factor_code',
         'two_factor_expires_at',
+        'nivel_acesso_id', // 🔥 Adicionado campo para nível de acesso
     ];
 
     protected $hidden = [
@@ -36,17 +36,65 @@ class User extends Authenticatable
         'two_factor_expires_at' => 'datetime',
     ];
 
+    /**
+     * Relacionamento: Usuário tem um conjunto de dados adicionais
+     */
     public function userData()
     {
         return $this->hasOne(UserData::class);
     }
+    
 
+    /**
+     * Relacionamento: Usuário pode ser dono de um escritório
+     */
     public function escritorio()
     {
         return $this->hasOne(Escritorio::class, 'user_id');
     }
 
-    // Retorna todas as sessões ativas do usuário
+    /**
+     * Relacionamento: Usuário pode ter múltiplas permissões associadas a diferentes escritórios
+     */
+    public function permissoes()
+    {
+        return $this->hasMany(PermissaoUsuario::class, 'usuario_id');
+    }
+
+    /**
+     * 🔥 Relacionamento: Usuário pertence a um nível de acesso
+     */
+    public function nivelAcesso()
+    {
+        return $this->hasOneThrough(NivelAcesso::class, PermissaoUsuario::class, 'usuario_id', 'id', 'id', 'nivel_acesso_id');
+    }
+
+    public function membros()
+    {
+        return $this->hasMany(MembroEscritorio::class, 'user_id');
+    }
+
+
+    /**
+     * 🔥 Obtém todas as permissões do usuário baseado no nível de acesso
+     */
+    public function getPermissions()
+    {
+        return $this->nivelAcesso ? json_decode($this->nivelAcesso->permissions, true) : [];
+    }
+
+    /**
+     * 🔥 Verifica se o usuário tem uma permissão específica
+     */
+    public function hasPermission($permission)
+    {
+        $permissoes = json_decode($this->nivelAcesso->permissoes ?? '{}', true);
+        return !empty($permissoes[$permission]);
+    }
+
+    /**
+     * Obtém todas as sessões ativas do usuário
+     */
     public function activeSessions()
     {
         return DB::table('sessions')
@@ -55,11 +103,17 @@ class User extends Authenticatable
             ->get();
     }
 
+    /**
+     * Envia notificação de redefinição de senha
+     */
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
     }
 
+    /**
+     * Gera um código de autenticação de dois fatores (2FA)
+     */
     public function generateTwoFactorCode()
     {
         $this->forceFill([
@@ -68,6 +122,9 @@ class User extends Authenticatable
         ])->save();
     }
 
+    /**
+     * Envia o código de autenticação de dois fatores (2FA) via e-mail ou SMS
+     */
     public function sendTwoFactorCode()
     {
         if ($this->two_factor_type === 'email') {

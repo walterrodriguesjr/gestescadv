@@ -3,9 +3,12 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EscritorioController;
+use App\Http\Controllers\MembroEscritorioController;
+use App\Http\Controllers\NivelAcessoController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\SessaoController;
 
@@ -50,11 +53,10 @@ Route::post('/reset-password', [PasswordController::class, 'resetPassword'])
     ->name('password.update');
 
 
-
 /**
  * Rotas Protegidas (Requer autenticação)
  */
-Route::middleware(['auth', 'two-factor.verified'])->group(function () {
+Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(function () {
     // Rota principal
     Route::get('/main', function () {
         return view('layouts.main');
@@ -88,15 +90,84 @@ Route::middleware(['auth', 'two-factor.verified'])->group(function () {
     Route::get('/perfil/historico', [PerfilController::class, 'historicoAlteracoes']);
 
     Route::post('/validar-senha-exclusao', [PerfilController::class, 'validarSenhaExclusao']);
+
     Route::post('/excluir-conta', [PerfilController::class, 'excluirConta']); // Mudando para refletir a função correta
 
+    Route::get('dados-escritorio', [EscritorioController::class, 'index'])->name('dados-escritorio.index');
+
+    Route::get('/meu-escritorio', [EscritorioController::class, 'show'])->name('dados-escritorio.meu-escritorio');
+
+
     //Rota de escritório
-    Route::resource('escritorio', EscritorioController::class);
+    Route::resource('dados-escritorio', EscritorioController::class)
+        ->except(['store', 'update']) // ⛔ Excluímos store e update para registrá-los separadamente
+
+        ->names([
+            'index'  => 'dados-escritorio.index',
+            'create' => 'dados-escritorio.create',
+            'show'   => 'dados-escritorio.show',
+            'edit'   => 'dados-escritorio.edit',
+            'destroy' => 'dados-escritorio.destroy',
+        ]);
+
+    // ✅ Aplicamos o middleware APENAS nas rotas store e update separadamente
+    Route::post('dados-escritorio', [EscritorioController::class, 'store'])
+        ->name('dados-escritorio.store')
+        ->middleware('permissao_escritorio');
+
+    Route::put('dados-escritorio/{id}', [EscritorioController::class, 'update'])
+        ->name('dados-escritorio.update')
+        ->middleware('permissao_escritorio');
+
 
     // Rota de perfil
     Route::resource('perfil', PerfilController::class);
+
+    // Rota de nível de acesso
+    Route::resource('nivel-acesso', NivelAcessoController::class)->names([
+        'index'   => 'nivel-acesso.index',
+        'create'  => 'nivel-acesso.create',
+        'store'   => 'nivel-acesso.store',
+        'show'    => 'nivel-acesso.show',
+        'edit'    => 'nivel-acesso.edit',
+        'update'  => 'nivel-acesso.update',
+        'destroy' => 'nivel-acesso.destroy',
+    ]);
+
+    // Rota de membros do escritorio
+    Route::resource('membro-escritorio', MembroEscritorioController::class)->names([
+        'index'   => 'membro-escritorio.index',
+        'create'  => 'membro-escritorio.create',
+        'store'   => 'membro-escritorio.store',
+        'edit'    => 'membro-escritorio.edit',
+        'update'  => 'membro-escritorio.update',
+        'destroy' => 'membro-escritorio.destroy',
+    ]);
+
+    Route::post('membro-escritorio/{id}/suspender', [MembroEscritorioController::class, 'suspender'])
+        ->name('membro-escritorio.suspender')
+        ->middleware('permissao_escritorio');
+
+    // Rota para reativar membro do escritório
+    Route::post('membro-escritorio/{id}/reativar', [MembroEscritorioController::class, 'reativar'])
+        ->name('membro-escritorio.reativar')
+        ->middleware('permissao_escritorio');
+
+    Route::post('/membros/{id}/reenviar-convite', [MembroEscritorioController::class, 'reenviarConvite'])
+        ->name('membros.reenviarConvite')
+        ->middleware('permissao_escritorio');
+
+    Route::put('/membros/{membroEscritorio}/update', [MembroEscritorioController::class, 'update'])
+        ->name('membros.update')
+        ->middleware('permissao_escritorio');
+
+    Route::delete('/membros/{membroEscritorio}/delete', [MembroEscritorioController::class, 'destroy'])
+        ->name('membros.destroy')
+        ->middleware('permissao_escritorio');
 });
 
+Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])
+    ->name('membro-escritorio.show');
 
 /**
  * Rotas de autenticação

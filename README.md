@@ -67,9 +67,9 @@ Passo 4: Instalar Dependências
         docker exec -it laravel_app bash
         npm install && npm run dev
 
-Passo 5: Executar Migrations
+Passo 5: Executar Migrations e seeders (popula a tabela de niveis de acesso, popula user e user_data com o user admin, popula permissoes com a permissao Administrador)
         docker exec -it laravel_app bash
-        php artisan migrate
+        php artisan db:reset
 
 Passo 6: Acessar o Projeto
     1.Acesse no navegador: 

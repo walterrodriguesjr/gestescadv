@@ -28,4 +28,16 @@ class Escritorio extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    // Usuários que possuem permissão para acessar esse escritório
+    public function permissoesUsuarios()
+    {
+        return $this->hasMany(PermissaoUsuario::class, 'escritorio_id');
+    }
+
+    public function membros()
+{
+    return $this->hasMany(MembroEscritorio::class, 'escritorio_id');
+}
+
 }
