@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\EscritorioController;
 use App\Http\Controllers\MembroEscritorioController;
 use App\Http\Controllers\NivelAcessoController;
@@ -164,6 +165,16 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
     Route::delete('/membros/{membroEscritorio}/delete', [MembroEscritorioController::class, 'destroy'])
         ->name('membros.destroy')
         ->middleware('permissao_escritorio');
+
+        // Rota de membros do escritorio
+    Route::resource('clientes', ClienteController::class)->names([
+        'index'   => 'clientes.index',
+        'create'  => 'clientes.create',
+        'store'   => 'clientes.store',
+        'edit'    => 'clientes.edit',
+        'update'  => 'clientes.update',
+        'destroy' => 'clientes.destroy',
+    ]);
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])

@@ -20,49 +20,51 @@
                 @php
                     use Illuminate\Support\Facades\File;
                     use Illuminate\Support\Facades\Crypt;
-            
+
                     $user = Auth::user();
                     $userData = $user->userData ?? null;
                     $fotoPath = asset('storage/foto-perfil/sem-foto.jpg'); // Foto padrão
-            
+
                     if ($userData) {
                         try {
-                            $cpfLimpo = $userData->cpf ? preg_replace('/\D/', '', Crypt::decryptString($userData->cpf)) : null; // Remove pontuações do CPF
-            
+                            $cpfLimpo = $userData->cpf
+                                ? preg_replace('/\D/', '', Crypt::decryptString($userData->cpf))
+                                : null; // Remove pontuações do CPF
+
                             if ($cpfLimpo) {
                                 // 🔍 Buscar fotos diretamente na pasta real do sistema de arquivos
                                 $fotoDir = storage_path('app/public/foto-perfil');
                                 $fotos = File::glob("{$fotoDir}/foto-{$cpfLimpo}-*.*"); // 🔥 Busca correta no diretório
-            
+
                                 // 🔎 Exibir todos os arquivos encontrados no log (para debug)
-                                Log::info("📁 Arquivos encontrados na pasta foto-perfil:", $fotos);
-            
+                                Log::info('📁 Arquivos encontrados na pasta foto-perfil:', $fotos);
+
                                 // Ordena as fotos pela data mais recente
                                 usort($fotos, function ($a, $b) {
                                     return strcmp($b, $a); // Ordenação decrescente
                                 });
-            
+
                                 // Se houver fotos, pega a mais recente
                                 if (!empty($fotos)) {
                                     $fotoArquivo = basename($fotos[0]); // Apenas o nome do arquivo
                                     $fotoPath = asset("storage/foto-perfil/{$fotoArquivo}");
-            
+
                                     Log::info("✅ Foto encontrada para sidebar: {$fotoPath}");
                                 } else {
                                     Log::warning("⚠️ Nenhuma foto encontrada para CPF: {$cpfLimpo}");
                                 }
                             }
                         } catch (\Exception $e) {
-                            Log::error("❌ Erro ao buscar a foto para sidebar: " . $e->getMessage());
+                            Log::error('❌ Erro ao buscar a foto para sidebar: ' . $e->getMessage());
                         }
                     }
                 @endphp
-            
+
                 <img src="{{ $fotoPath }}" class="img-circle elevation-2" alt="User Image">
             </div>
-            
 
-            
+
+
 
             <!-- Nome do usuário -->
             <div class="info">
@@ -87,8 +89,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-user"></i>
+                    <a href="{{ route('clientes.index') }}" class="nav-link">
+                        <i class="nav-icon fas fa-users"></i>
                         <p>Clientes</p>
                     </a>
                 </li>

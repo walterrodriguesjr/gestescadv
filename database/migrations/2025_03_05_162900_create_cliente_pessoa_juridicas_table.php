@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('cliente_pessoa_juridicas', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('escritorio_id')->constrained()->onDelete('cascade');
+            $table->text('razao_social');
+            $table->text('nome_fantasia')->nullable();
+            $table->text('cnpj'); // Removido unique()
+            $table->text('telefone')->nullable();
+            $table->text('celular');
+            $table->text('email'); // Removido unique()
+            $table->text('cep')->nullable();
+            $table->text('logradouro')->nullable();
+            $table->text('numero')->nullable();
+            $table->text('bairro')->nullable();
+            $table->text('cidade')->nullable();
+            $table->text('estado')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('cliente_pessoa_juridicas');
+    }
+};
+
