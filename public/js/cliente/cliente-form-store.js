@@ -1,27 +1,28 @@
 $(document).ready(function () {
 
-   // Função genérica para inicializar popovers
-function inicializarPopover($input, mensagem) {
-    $input.popover({
-        trigger: 'manual',
-        html: true,
-        placement: 'top',
-        content: `
+    
+    // Função genérica para inicializar popovers
+    function inicializarPopover($input, mensagem) {
+        $input.popover({
+            trigger: 'manual',
+            html: true,
+            placement: 'top',
+            content: `
             <div>
                 ${mensagem}
                 <button type="button" class="close close-popover ml-2" aria-label="Fechar">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>`
-    });
+        });
 
-    // Exibe o popover ao passar o mouse após ter fechado
-    $input.on('mouseenter', function () {
-        $(this).popover('show');
-    }).on('mouseleave', function () {
-        $(this).popover('hide');
-    });
-}
+        // Exibe o popover ao passar o mouse após ter fechado
+        $input.on('mouseenter', function () {
+            $(this).popover('show');
+        }).on('mouseleave', function () {
+            $(this).popover('hide');
+        });
+    }
 
     //--------------------------------------------------
     // VARIÁVEIS GLOBAIS / ESTADOS E CHOICES
@@ -88,68 +89,67 @@ function inicializarPopover($input, mensagem) {
     });
 
     // Inicializa os popovers para os 3 inputs
-inicializarPopover($('#cepCliente'), 'Digite um CEP válido para preencher os dados automaticamente.');
-inicializarPopover($('#cepJuridico'), 'Digite um CEP válido para preencher os dados automaticamente.');
-inicializarPopover($('#cnpjCliente'), 'Digite um CNPJ válido para preencher os dados automaticamente.');
+    inicializarPopover($('#cepCliente'), 'Digite um CEP válido para preencher os dados automaticamente.');
+    inicializarPopover($('#cepJuridico'), 'Digite um CEP válido para preencher os dados automaticamente.');
+    inicializarPopover($('#cnpjCliente'), 'Digite um CNPJ válido para preencher os dados automaticamente.');
 
 
-// Fechar popover corretamente (ajustado para Bootstrap)
-$(document).on('click', '.close-popover', function () {
-    const popoverId = $(this).closest('.popover').attr('id');
-    $(`[aria-describedby="${popoverId}"]`).popover('hide');
-});
+    // Fechar popover corretamente (ajustado para Bootstrap)
+    $(document).on('click', '.close-popover', function () {
+        const popoverId = $(this).closest('.popover').attr('id');
+        $(`[aria-describedby="${popoverId}"]`).popover('hide');
+    });
 
 
 
-// Exibe e ajusta popovers conforme o tipo de cliente selecionado
-$("#tipoCliente").on("change", function () {
-    let tipo = $(this).val();
+    // Exibe e ajusta popovers conforme o tipo de cliente selecionado
+    $("#tipoCliente").on("change", function () {
+        let tipo = $(this).val();
+        $(".cliente-form").addClass("d-none");
 
-    $(".cliente-form").addClass("d-none");
+        resetFormAndValidation($("#formPessoaFisica"));
+        resetFormAndValidation($("#formPessoaJuridica"));
 
-    resetFormAndValidation($("#formPessoaFisica"));
-    resetFormAndValidation($("#formPessoaJuridica"));
+        $("#estadoCliente, #cidadeCliente, #estadoJuridico, #cidadeJuridico")
+            .empty().append('<option value="">Selecione</option>');
 
-    $("#estadoCliente, #cidadeCliente, #estadoJuridico, #cidadeJuridico")
-        .empty().append('<option value="">Selecione</option>');
+        choicesEstadoCliente = initializeChoices($("#estadoCliente"), "Selecione o estado (PF)");
+        choicesCidadeCliente = initializeChoices($("#cidadeCliente"), "Selecione a cidade (PF)");
+        choicesEstadoJuridico = initializeChoices($("#estadoJuridico"), "Selecione o estado (PJ)");
+        choicesCidadeJuridico = initializeChoices($("#cidadeJuridico"), "Selecione a cidade (PJ)");
 
-    choicesEstadoCliente = initializeChoices($("#estadoCliente"), "Selecione o estado (PF)");
-    choicesCidadeCliente = initializeChoices($("#cidadeCliente"), "Selecione a cidade (PF)");
-    choicesEstadoJuridico = initializeChoices($("#estadoJuridico"), "Selecione o estado (PJ)");
-    choicesCidadeJuridico = initializeChoices($("#cidadeJuridico"), "Selecione a cidade (PJ)");
-
-    if (!listaEstados.length) {
-        carregarListaEstados().then(() => {
+        if (!listaEstados.length) {
+            carregarListaEstados().then(() => {
+                popularSelectEstado($("#estadoCliente"), listaEstados);
+                popularSelectEstado($("#estadoJuridico"), listaEstados);
+            });
+        } else {
             popularSelectEstado($("#estadoCliente"), listaEstados);
             popularSelectEstado($("#estadoJuridico"), listaEstados);
-        });
-    } else {
-        popularSelectEstado($("#estadoCliente"), listaEstados);
-        popularSelectEstado($("#estadoJuridico"), listaEstados);
-    }
+        }
 
-    // Controla a exibição dos popovers e forms corretamente
-    if (tipo === "pessoa_fisica") {
-        $("#formPessoaFisica").removeClass("d-none");
+        // Controla a exibição dos popovers e forms corretamente
+        if (tipo === "pessoa_fisica") {
+            $("#formPessoaFisica").removeClass("d-none");
 
-        $('#cepJuridico, #cnpjCliente').popover('hide');
-        setTimeout(() => {
-            $('#cepCliente').popover('show');
-        }, 250);
+            $('#cepJuridico, #cnpjCliente').popover('hide');
+            setTimeout(() => {
+                $('#cepCliente').popover('show');
+            }, 250);
 
-    } else if (tipo === "pessoa_juridica") {
-        $("#formPessoaJuridica").removeClass("d-none");
+        } else if (tipo === "pessoa_juridica") {
+            $("#formPessoaJuridica").removeClass("d-none");
 
-        $('#cepCliente').popover('hide');
-        setTimeout(() => {
-            $('#cepJuridico').popover('show');
-            $('#cnpjCliente').popover('show');
-        }, 250);
+            $('#cepCliente').popover('hide');
+            setTimeout(() => {
+                $('#cepJuridico').popover('show');
+                $('#cnpjCliente').popover('show');
+            }, 250);
 
-    } else {
-        $('#cepCliente, #cepJuridico, #cnpjCliente').popover('hide');
-    }
-});
+        } else {
+            $('#cepCliente, #cepJuridico, #cnpjCliente').popover('hide');
+        }
+    });
 
 
     //--------------------------------------------------
@@ -346,17 +346,41 @@ $("#tipoCliente").on("change", function () {
     $("#cnpjCliente").on("input", async function () {
         let cnpj = $(this).val().replace(/\D/g, "");
         if (cnpj.length === 14) {
+            // Exibe Swal de carregamento com tempo mínimo e máximo
+            let swalLoading = Swal.fire({
+                title: "Buscando CNPJ...",
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+                timer: 10000, // Tempo máximo de 10s
+                timerProgressBar: true
+            });
+
+            let startTime = Date.now(); // Marca o tempo inicial
+
             try {
                 let dataBrasil = await $.getJSON(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
-                preencherCnpjBrasil(dataBrasil);
+                let elapsedTime = Date.now() - startTime; // Calcula o tempo decorrido
+
+                // Aguarda pelo menos 1500ms antes de fechar o Swal
+                setTimeout(() => {
+                    preencherCnpjBrasil(dataBrasil);
+                    Swal.close();
+                }, Math.max(0, 1500 - elapsedTime));
+
             } catch (eBrasil) {
-                // se deu erro, tenta openCNPJ
                 console.warn("BrasilAPI falhou. Tentando openCNPJ...", eBrasil);
                 try {
                     let dataOpen = await $.getJSON(`https://open.cnpja.com/office/${cnpj}`);
-                    preencherCnpjOpen(dataOpen);
+                    let elapsedTime = Date.now() - startTime;
+
+                    // Aguarda pelo menos 1500ms antes de fechar o Swal
+                    setTimeout(() => {
+                        preencherCnpjOpen(dataOpen);
+                        Swal.close();
+                    }, Math.max(0, 1500 - elapsedTime));
+
                 } catch (eOpen) {
-                    console.error("Ambas falharam:", eOpen);
+                    console.error("Ambas as APIs falharam:", eOpen);
                     Swal.fire({
                         icon: "error",
                         title: "CNPJ Inválido",
@@ -366,6 +390,8 @@ $("#tipoCliente").on("change", function () {
             }
         }
     });
+
+
 
     function preencherCnpjBrasil(data) {
         if (data.erro) {
@@ -521,6 +547,7 @@ $("#tipoCliente").on("change", function () {
             success: function (resp) {
                 Swal.fire("Sucesso!", resp.message || "Cliente PF cadastrado!", "success");
                 $("#formPessoaFisica")[0].reset();
+                $(document).trigger("clienteCadastrado", { tipo: "pessoa_fisica" });
             },
             error: function (xhr) {
                 let errorMsg = "Falha ao cadastrar cliente (PF).";
@@ -617,3 +644,53 @@ $("#tipoCliente").on("change", function () {
 
 
 });
+
+$(function() {
+    // 1) Quando qualquer card for expandido:
+    //    fecha os demais (caso tenha vários).
+    $('.card[data-card-widget="collapse"]').on('expanded.lte.cardwidget', function() {
+        var cardAberto = this;
+        $('.card[data-card-widget="collapse"]').each(function() {
+            if (this !== cardAberto) {
+                // Fecha os outros
+                $(this).CardWidget('collapse');
+            }
+        });
+    });
+
+    // 2) Quando o card de "Novo Cliente" for fechado,
+    //    voltamos o select tipoCliente para "Selecione".
+    $('#cardNovoCliente .card[data-card-widget="collapse"]').on('collapsed.lte.cardwidget', function() {
+        // Se você usa Choices.js:
+        const instance = $('#tipoCliente').data('choicesInstance');
+        if (instance) {
+            instance.setChoiceByValue(''); 
+        } else {
+            // Se não tiver Choices, basta resetar com jQuery normal
+            $('#tipoCliente').val('');
+        }
+
+        // Esconde os dois forms, se quiser zerar tela
+        $('.cliente-form').addClass('d-none');
+        // Poderia também resetar ambos, se desejar
+        // $('#formPessoaFisica, #formPessoaJuridica')[0].reset();
+    });
+
+    // 3) Quando o card de "Lista de Clientes" for fechado,
+    //    voltamos o select tipoClienteListagem para "Selecione".
+    $('#cardListarClientes .card[data-card-widget="collapse"]').on('collapsed.lte.cardwidget', function() {
+        // Se você usa Choices.js:
+        const instanceListagem = $('#tipoClienteListagem').data('choicesInstance');
+        if (instanceListagem) {
+            instanceListagem.setChoiceByValue('');
+        } else {
+            // Se não tiver Choices, basta resetar com jQuery
+            $('#tipoClienteListagem').val('');
+        }
+
+        // Se quiser, pode limpar a tabela ou fazer outro comportamento...
+    });
+});
+
+
+

@@ -166,11 +166,12 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
         ->name('membros.destroy')
         ->middleware('permissao_escritorio');
 
-        // Rota de membros do escritorio
+    // Rota de membros do escritorio
     Route::resource('clientes', ClienteController::class)->names([
         'index'   => 'clientes.index',
         'create'  => 'clientes.create',
         'store'   => 'clientes.store',
+        'show'    => 'clientes.show',   
         'edit'    => 'clientes.edit',
         'update'  => 'clientes.update',
         'destroy' => 'clientes.destroy',

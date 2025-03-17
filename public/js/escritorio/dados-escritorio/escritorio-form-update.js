@@ -66,32 +66,55 @@ $(document).ready(function () {
     // Busca CEP e preenche os campos automaticamente
     $cepEscritorio.on("input", function () {
         const cep = $(this).val().replace(/\D/g, "");
+
         if (cep.length === 8 && cep !== ultimoCepConsultado) {
             ultimoCepConsultado = cep;
+
+            // Exibe o Swal de carregamento por pelo menos 1.5 segundos
+            let swalLoading = Swal.fire({
+                title: "Buscando CEP...",
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+                timer: 10000, // Tempo máximo de 10s
+                timerProgressBar: true
+            });
+
+            let tempoMinimo = new Promise(resolve => setTimeout(resolve, 1500));
+
             $.ajax({
                 url: `https://viacep.com.br/ws/${cep}/json/`,
                 type: "GET",
                 dataType: "json",
                 success: async function (data) {
+                    await tempoMinimo; // Aguarda pelo menos 1.5 segundos antes de fechar o Swal
+
+                    Swal.close();
+
                     if (data.erro) {
                         Swal.fire({ icon: "warning", title: "Atenção!", text: "CEP não encontrado!" });
                         limparEndereco();
                         return;
                     }
+
                     $logradouroEscritorio.val(data.logradouro);
                     $bairroEscritorio.val(data.bairro);
                     setChoiceValue($estadoEscritorio, data.uf);
+
                     setTimeout(() => {
                         carregarCidades(data.uf, data.localidade);
                     }, 500);
                 },
-                error: function () {
+                error: async function () {
+                    await tempoMinimo; // Aguarda pelo menos 1.5 segundos antes de fechar o Swal
+
+                    Swal.close();
                     Swal.fire({ icon: "error", title: "Erro", text: "Erro ao buscar o CEP. Tente novamente." });
                     limparEndereco();
                 },
             });
         }
     });
+
 
     function limparEndereco() {
         $logradouroEscritorio.val("");
@@ -116,12 +139,12 @@ $(document).ready(function () {
         if (escritorioId && escritorioUpdateUrl && escritorioUpdateUrl !== "null") {
             return;
         }
-    
+
         // Se não houver URL de show, não tem o que fazer
         if (!escritorioShowUrl || escritorioShowUrl === "null") {
             return;
         }
-        
+
         try {
             const response = await $.ajax({
                 url: escritorioShowUrl,
@@ -129,7 +152,7 @@ $(document).ready(function () {
                 dataType: "json",
                 headers: { "X-CSRF-TOKEN": csrfToken }
             });
-    
+
             if (response.success && response.dados) {
                 escritorioId = response.dados.id;
                 escritorioUpdateUrl = "{{ route('dados-escritorio.update', ':id') }}".replace(':id', escritorioId);
@@ -137,7 +160,7 @@ $(document).ready(function () {
         } catch (err) {
         }
     }
-    
+
 
     // 🔥 **Corrigindo o problema do botão de atualização** 🔥
     $(document).off("click", "#buttonAtualizarDadosEscritorio").on("click", "#buttonAtualizarDadosEscritorio", async function (e) {

@@ -17,16 +17,19 @@ class ResetDatabase extends Command
         Artisan::call('migrate:fresh');
         $this->info("✅ Migrations executadas com sucesso!");
 
-        $this->info("📦 Populando os dados...");
-        
-        Artisan::call('db:seed --class=NivelAcessoSeeder');
-        $this->info("✅ Níveis de acesso criados.");
+        $seeders = [
+            'NivelAcessoSeeder',
+            'AdminUserSeeder',
+            'AdminUserPermissaoSeeder',
+            'EscritorioSeeder',
+            'ClienteSeeder',
+            'MembroSeeder',
+        ];
 
-        Artisan::call('db:seed --class=AdminUserSeeder');
-        $this->info("✅ Usuário Administrador criado.");
-
-        Artisan::call('db:seed --class=AdminUserPermissaoSeeder');
-        $this->info("✅ Nível de Administrador atribuído ao usuário Admin.");
+        foreach ($seeders as $seeder) {
+            Artisan::call("db:seed --class={$seeder}");
+            $this->info("✅ {$seeder} executado com sucesso.");
+        }
 
         $this->info("🎉 Banco de dados resetado e populado com sucesso!");
     }

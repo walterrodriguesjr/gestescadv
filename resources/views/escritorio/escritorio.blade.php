@@ -131,14 +131,13 @@
                                     style="{{ Auth::user()->escritorio ? 'display: none;' : '' }}">
                                     <i class="fas fa-save"></i> Cadastrar Escritório
                                 </button>
-                        
+
                                 <button type="button" class="btn btn-success" id="buttonAtualizarDadosEscritorio"
                                     style="{{ Auth::user()->escritorio ? '' : 'display: none;' }}">
                                     <i class="fas fa-edit"></i> Atualizar Escritório
                                 </button>
                             @endcan
                         </div>
-                        
                     </div>
                 </form>
             </div>
@@ -238,29 +237,28 @@
 @endsection
 
 @push('scripts')
-@php
-    $usuario = Auth::user();
-    $escritorio = $usuario->escritorio
-        ?? ($usuario->membros()->with('escritorio')->first()->escritorio ?? null);
-    $escritorioId = $escritorio->id ?? '';
-@endphp
+    @php
+        $usuario = Auth::user();
+        $escritorio = $usuario->escritorio ?? ($usuario->membros()->with('escritorio')->first()->escritorio ?? null);
+        $escritorioId = $escritorio->id ?? '';
+    @endphp
 
-<script>
-    // "Template" com placeholder :id
-    let escritorioUpdateTemplate = "{{ route('dados-escritorio.update', ':id') }}";
-    let escritorioShowTemplate   = "{{ route('dados-escritorio.show', ':id') }}";
+    <script>
+        // "Template" com placeholder :id
+        let escritorioUpdateTemplate = "{{ route('dados-escritorio.update', ':id') }}";
+        let escritorioShowTemplate = "{{ route('dados-escritorio.show', ':id') }}";
 
-    // Variáveis globais iniciais
-    let escritorioId = "{{ $escritorioId }}";
-    let escritorioUpdateUrl = escritorioId
-        ? escritorioUpdateTemplate.replace(':id', escritorioId)
-        : null;
-    let escritorioShowUrl = escritorioId
-        ? escritorioShowTemplate.replace(':id', escritorioId)
-        : null;
+        // Variáveis globais iniciais
+        let escritorioId = "{{ $escritorioId }}";
+        let escritorioUpdateUrl = escritorioId ?
+            escritorioUpdateTemplate.replace(':id', escritorioId) :
+            null;
+        let escritorioShowUrl = escritorioId ?
+            escritorioShowTemplate.replace(':id', escritorioId) :
+            null;
 
-    let escritorioStoreUrl = "{{ route('dados-escritorio.store') }}";
-    let csrfToken = "{{ csrf_token() }}";
+        let escritorioStoreUrl = "{{ route('dados-escritorio.store') }}";
+        let csrfToken = "{{ csrf_token() }}";
 
         /* URL index de listar niveis de acesso */
         const nivelAcessoIndexUrl = "{{ route('nivel-acesso.index') }}";

@@ -174,10 +174,10 @@ $(document).ready(function () {
             // Se o back-end retornou "dados.id"
             if (response.dados && response.dados.id) {
                 escritorioId = response.dados.id;
-            
+
                 // Substitui na string "template"
                 escritorioUpdateUrl = escritorioUpdateTemplate.replace(':id', escritorioId);
-                escritorioShowUrl   = escritorioShowTemplate.replace(':id', escritorioId);
+                escritorioShowUrl = escritorioShowTemplate.replace(':id', escritorioId);
 
                 // Se quiser recarregar dados na tela imediatamente (opcional)
                 if (typeof carregarDadosEscritorioGlobal === 'function') {

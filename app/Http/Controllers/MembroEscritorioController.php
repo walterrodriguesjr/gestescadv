@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\ConviteMembroEscritorioMail;
 use App\Models\Escritorio;
 use App\Models\MembroEscritorio;
+use App\Models\NivelAcesso;
 use App\Models\PermissaoUsuario;
 use App\Models\User;
 use App\Models\UserData;
@@ -202,12 +203,18 @@ class MembroEscritorioController
             Log::info("✅ Escritório encontrado. Buscando membros...");
 
             $membros = MembroEscritorio::where('escritorio_id', $escritorioId)
-                ->with(['usuario.nivelAcesso', 'usuario.userData'])
+                ->with(['usuario.userData'])
                 ->get()
                 ->map(function ($membro) {
                     $userData = $membro->usuario->userData ?? null;
 
-                    // 🔐 Descriptografando apenas os campos criptografados
+                    // 🔍 Buscar o nível de acesso mais recente do usuário
+                    $nivelAcesso = PermissaoUsuario::where('usuario_id', $membro->usuario->id)
+                        ->latest('created_at') // Pega o mais recente
+                        ->with('nivelAcesso') // Carrega os detalhes do nível
+                        ->first();
+
+                    // 🔐 Descriptografando os campos necessários
                     $cpf = null;
                     $telefone = null;
                     $celular = null;
@@ -241,7 +248,7 @@ class MembroEscritorioController
                     $fotoPath = asset("storage/foto-perfil/sem-foto.jpg"); // Foto padrão
                     if ($userData && $cpf) {
                         try {
-                            $cpfLimpo = preg_replace('/\D/', '', $cpf); // Remove pontuações do CPF
+                            $cpfLimpo = preg_replace('/\D/', '', $cpf);
 
                             // 🔍 Buscar fotos diretamente no sistema de arquivos
                             $fotoDir = storage_path('app/public/foto-perfil');
@@ -276,7 +283,7 @@ class MembroEscritorioController
                             ->first();
 
                         if ($resetToken) {
-                            $expiracaoPadrao = config('auth.passwords.users.expire', 60); // Tempo em minutos (padrão: 60 min)
+                            $expiracaoPadrao = config('auth.passwords.users.expire', 60);
                             $tokenCriadoEm = Carbon::parse($resetToken->created_at);
                             $tokenExpirado = $tokenCriadoEm->addMinutes($expiracaoPadrao)->isPast();
 
@@ -291,23 +298,17 @@ class MembroEscritorioController
                         'id'              => $membro->id,
                         'nome'            => $membro->usuario->name ?? 'Desconhecido',
                         'email'           => $membro->usuario->email ?? 'Sem email',
-                        'nivel_acesso'    => $membro->usuario->nivelAcesso->nome ?? 'Removido',
+                        'nivel_acesso'    => $nivelAcesso ? $nivelAcesso->nivelAcesso->nome : 'Sem nível',
                         'status'          => $membro->status,
-
-                        // 🔓 Campos descriptografados
                         'cpf'             => $cpf ?? 'Não informado',
                         'telefone'        => $telefone ?? 'Não informado',
                         'celular'         => $celular ?? 'Não informado',
                         'oab'             => $oab ?? 'Não informado',
-
-                        // 🔥 Campos normais (não criptografados)
                         'cidade'          => $userData->cidade ?? 'Não informado',
                         'estado'          => $userData->estado ?? 'Não informado',
                         'estado_oab'      => $userData->estado_oab ?? 'Não informado',
                         'data_nascimento' => $userData->data_nascimento ?? 'Não informado',
-                        'foto'            => $fotoPath, // 🔥 Foto mais recente ou padrão
-
-                        // 🕒 **Retorna se o token está expirado**
+                        'foto'            => $fotoPath,
                         'token_expirado'  => $tokenExpirado,
                     ];
 
@@ -328,11 +329,6 @@ class MembroEscritorioController
             ], 500);
         }
     }
-
-
-
-
-
 
     /**
      * Show the form for editing the specified resource.
@@ -378,7 +374,7 @@ class MembroEscritorioController
                 ], 422);
             }
 
-            // Atualizar os dados do usuário (tabela users)
+            // Atualizar os dados do usuário (tabela `users`)
             $usuario->update([
                 'name'  => $request->nome,
                 'email' => $request->email,
@@ -397,14 +393,29 @@ class MembroEscritorioController
                 ]);
             }
 
-            // Atualizar o nível de acesso do membro
-            $membroEscritorio->update([
-                'nivel_acesso' => $request->nivelAcesso,
+            // Buscar o ID do novo nível de acesso
+            $nivelAcesso = NivelAcesso::where('nome', $request->nivelAcesso)->first();
+            if (!$nivelAcesso) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Nível de acesso inválido.',
+                ], 400);
+            }
+
+            // Criar novo registro de nível de acesso na tabela `permissoes_usuarios`
+            PermissaoUsuario::create([
+                'usuario_id' => $usuario->id,
+                'nivel_acesso_id' => $nivelAcesso->id,
+                'escritorio_id' => $membroEscritorio->escritorio_id,
+                'concedente_id' => Auth::id(), // Usuário que realizou a alteração
             ]);
 
             DB::commit(); // Confirma a transação
 
-            Log::info("✅ Membro atualizado com sucesso", ['membro_id' => $membroEscritorio->id]);
+            Log::info("✅ Membro atualizado com sucesso", [
+                'membro_id' => $membroEscritorio->id,
+                'novo_nivel' => $request->nivelAcesso
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -420,6 +431,7 @@ class MembroEscritorioController
             ], 500);
         }
     }
+
 
     /**
      * Remove the specified resource from storage.
