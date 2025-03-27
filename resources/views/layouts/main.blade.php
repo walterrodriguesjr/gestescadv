@@ -25,6 +25,9 @@
     <!-- Choices.js CSS -->
     <link rel="stylesheet" href="{{ asset('vendor/choices/css/choices.min.css') }}">
 
+    <!-- Dropzone CSS -->
+    <link rel="stylesheet" href="{{ asset('vendor/dropzone/css/dropzone.css') }}">
+
     <!-- CSS personalizado view perfil-->
     <link rel="stylesheet" href="{{ asset('css/perfil/perfil-form.css') }}">
 
@@ -98,6 +101,9 @@
 
     <!-- Choices.js JS -->
     <script src="{{ asset('vendor/choices/js/choices.min.js') }}"></script>
+
+    <!-- Dropzone JS -->
+    <script src="{{ asset('vendor/dropzone/js/dropzone-min.js') }}"></script>
 
     <!-- Scripts adicionais -->
     @stack('scripts')

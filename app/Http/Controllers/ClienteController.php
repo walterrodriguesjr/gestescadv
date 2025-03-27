@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\ClientePessoaFisica;
 use App\Models\ClientePessoaJuridica;
+use App\Models\DocumentoClientePessoaFisica;
+use App\Models\DocumentoClientePessoaJuridica;
 use App\Models\Escritorio;
 use App\Models\MembroEscritorio;
 use Dotenv\Exception\ValidationException;
@@ -12,9 +14,127 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
 
 class ClienteController
 {
+
+    public function atualizarDocumentoCliente(Request $request, string $tipoCliente, string $idDocumento)
+{
+    $request->validate(['nome_original' => 'required|string|max:255']);
+
+    $model = $tipoCliente === 'pessoa_fisica'
+        ? DocumentoClientePessoaFisica::findOrFail($idDocumento)
+        : DocumentoClientePessoaJuridica::findOrFail($idDocumento);
+
+    $model->nome_original = $request->nome_original;
+    $model->save();
+
+    return response()->json(['message' => 'Nome atualizado com sucesso!']);
+}
+
+public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento)
+{
+    DB::beginTransaction();
+
+    try {
+        $model = $tipoCliente === 'pessoa_fisica'
+            ? DocumentoClientePessoaFisica::findOrFail($idDocumento)
+            : DocumentoClientePessoaJuridica::findOrFail($idDocumento);
+
+        // Verifique se caminho_arquivo existe antes de deletar
+        if ($model->caminho_arquivo && Storage::disk('public')->exists($model->caminho_arquivo)) {
+            Storage::disk('public')->delete($model->caminho_arquivo);
+        }
+
+        $model->delete();
+
+        DB::commit();
+
+        return response()->json(['message' => 'Documento excluído com sucesso!']);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['message' => 'Erro ao excluir documento.'], 500);
+    }
+}
+
+
+    // Anexar Documento
+    public function anexarDocumento(Request $request, $tipo, $id)
+{
+    $request->validate([
+        'file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        'nome_original' => 'required|string|max:255',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        $usuarioId = Auth::id(); // ID do usuário logado
+
+        $arquivo = $request->file('file');
+
+        // Obtém extensão original
+        $extensao = $arquivo->getClientOriginalExtension();
+
+        // Sanitiza o nome original fornecido pelo usuário
+        $nomeArquivoSanitizado = Str::slug(pathinfo($request->nome_original, PATHINFO_FILENAME));
+
+        // Monta o nome completo do arquivo com timestamp
+        $nomeArquivo = $nomeArquivoSanitizado . '-' . date('YmdHis') . '.' . $extensao;
+
+        // Define o caminho desejado
+        $caminho = $arquivo->storeAs("documento-usuario/{$usuarioId}", $nomeArquivo, 'public');
+
+        // Determina o model apropriado
+        $model = ($tipo === 'pessoa_fisica') 
+            ? DocumentoClientePessoaFisica::class 
+            : DocumentoClientePessoaJuridica::class;
+
+        $cliente_id_column = ($tipo === 'pessoa_fisica') 
+            ? 'cliente_pessoa_fisica_id' 
+            : 'cliente_pessoa_juridica_id';
+
+        // Salva no banco
+        $model::create([
+            $cliente_id_column => $id,
+            'nome_original' => $request->nome_original,
+            'nome_arquivo' => $caminho
+        ]);
+
+        DB::commit();
+        return response()->json(['success' => true]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error("Erro ao anexar documento", ['erro' => $e->getMessage()]);
+        return response()->json(['success' => false], 500);
+    }
+}
+
+    // Listar Documentos
+    public function listarDocumentos($tipo, $id)
+    {
+        $model = ($tipo === 'pessoa_fisica')
+            ? DocumentoClientePessoaFisica::class
+            : DocumentoClientePessoaJuridica::class;
+
+        $cliente_id_column = ($tipo === 'pessoa_fisica')
+            ? 'cliente_pessoa_fisica_id'
+            : 'cliente_pessoa_juridica_id';
+
+        $documentos = $model::where($cliente_id_column, $id)->get()->map(function ($doc) {
+            return [
+                'id' => $doc->id,
+                'nome_original' => $doc->nome_original,
+                'url' => Storage::url($doc->nome_arquivo)
+            ];
+        });
+
+        return response()->json(['documentos' => $documentos]);
+    }
     /**
      * Display a listing of the resource.
      */
@@ -182,7 +302,7 @@ class ClienteController
                             'estado' => $cliente->estado ? Crypt::decryptString($cliente->estado) : null,
                         ];
                     });
-            }  elseif ($tipoCliente === 'pessoa_juridica') {
+            } elseif ($tipoCliente === 'pessoa_juridica') {
                 $clientes = ClientePessoaJuridica::where('escritorio_id', $escritorioId)->get()
                     ->map(function ($cliente) {
                         return [
@@ -428,46 +548,44 @@ class ClienteController
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-{
-    DB::beginTransaction();
+    {
+        DB::beginTransaction();
 
-    try {
-        Log::info("Iniciando exclusão do cliente...", ["cliente_id" => $id]);
+        try {
+            Log::info("Iniciando exclusão do cliente...", ["cliente_id" => $id]);
 
-        $user = Auth::user();
-        $escritorio = Escritorio::where("user_id", $user->id)->first();
+            $user = Auth::user();
+            $escritorio = Escritorio::where("user_id", $user->id)->first();
 
-        if (!$escritorio) {
-            Log::error("Usuário não pertence a nenhum escritório.");
-            return response()->json(["message" => "Erro ao excluir cliente. Escritório não encontrado."], 400);
+            if (!$escritorio) {
+                Log::error("Usuário não pertence a nenhum escritório.");
+                return response()->json(["message" => "Erro ao excluir cliente. Escritório não encontrado."], 400);
+            }
+
+            // Verifica se o cliente é PF ou PJ
+            $clientePF = ClientePessoaFisica::where("escritorio_id", $escritorio->id)->find($id);
+            $clientePJ = ClientePessoaJuridica::where("escritorio_id", $escritorio->id)->find($id);
+
+            if (!$clientePF && !$clientePJ) {
+                Log::warning("Cliente não encontrado para exclusão.", ["id" => $id]);
+                return response()->json(["message" => "Cliente não encontrado."], 404);
+            }
+
+            // Excluir PF ou PJ conforme encontrado
+            if ($clientePF) {
+                Log::info("Excluindo cliente PF...", ["id" => $id]);
+                $clientePF->delete();
+            } elseif ($clientePJ) {
+                Log::info("Excluindo cliente PJ...", ["id" => $id]);
+                $clientePJ->delete();
+            }
+
+            DB::commit();
+            return response()->json(["message" => "Cliente excluído com sucesso!"]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Erro ao excluir cliente", ["exception" => $e->getMessage()]);
+            return response()->json(["message" => "Erro ao excluir cliente."], 500);
         }
-
-        // Verifica se o cliente é PF ou PJ
-        $clientePF = ClientePessoaFisica::where("escritorio_id", $escritorio->id)->find($id);
-        $clientePJ = ClientePessoaJuridica::where("escritorio_id", $escritorio->id)->find($id);
-
-        if (!$clientePF && !$clientePJ) {
-            Log::warning("Cliente não encontrado para exclusão.", ["id" => $id]);
-            return response()->json(["message" => "Cliente não encontrado."], 404);
-        }
-
-        // Excluir PF ou PJ conforme encontrado
-        if ($clientePF) {
-            Log::info("Excluindo cliente PF...", ["id" => $id]);
-            $clientePF->delete();
-        } elseif ($clientePJ) {
-            Log::info("Excluindo cliente PJ...", ["id" => $id]);
-            $clientePJ->delete();
-        }
-
-        DB::commit();
-        return response()->json(["message" => "Cliente excluído com sucesso!"]);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error("Erro ao excluir cliente", ["exception" => $e->getMessage()]);
-        return response()->json(["message" => "Erro ao excluir cliente."], 500);
     }
-}
-
 }

@@ -235,88 +235,87 @@
     <script src="{{ asset('js/cliente/cliente-form-store.js') }}"></script>
     <script src="{{ asset('js/cliente/cliente-form-update.js') }}"></script>
     <script src="{{ asset('js/cliente/cliente-form-delete.js') }}"></script>
+    <script src="{{ asset('js/cliente/cliente-form-documentos.js') }}"></script>
 
     <script>
         $(document).ready(function() {
 
             // Ao clicar no header (ou no botão) do card, abrimos/fechamos manualmente
             // ... (dentro de $(document).ready(...))
-$(document).on('click', '.card-toggle-header', function(e) {
-    e.preventDefault();
+            $(document).on('click', '.card-toggle-header', function(e) {
+                e.preventDefault();
 
-    let $card = $(this).closest('.card');
-    let $cardBody = $card.find('.card-body').first();
+                let $card = $(this).closest('.card');
+                let $cardBody = $card.find('.card-body').first();
 
-    if ($cardBody.is(':visible')) {
-        // === FECHAR O CARD ===
-        $cardBody.slideUp();
-        $card.addClass('collapsed-card');
+                if ($cardBody.is(':visible')) {
+                    // === FECHAR O CARD ===
+                    $cardBody.slideUp();
+                    $card.addClass('collapsed-card');
 
-        // Se for o card de Novo Cliente (ID #cardNovoCliente)
-        if ($card.is('#cardNovoCliente, #cardNovoCliente .card')) {
-            // 1) Reseta o select "tipoCliente"
-            const instance = $('#tipoCliente').data('choicesInstance');
-            if (instance) {
-                instance.setChoiceByValue('');
-            } else {
-                $('#tipoCliente').val('');
-            }
-            // 2) Esconde formulários PF/PJ
-            $('.cliente-form').addClass('d-none');
-            // 3) Esconde popovers
-            $('#cepCliente, #cepJuridico, #cnpjCliente').popover('hide');
-        }
-
-        // Se for o card de Lista de Clientes
-        if ($card.is('#cardListaClientes, #cardListaClientes .card')) {
-            const instanceListagem = $('#tipoClienteListagem').data('choicesInstance');
-            if (instanceListagem) {
-                instanceListagem.setChoiceByValue('');
-            } else {
-                $('#tipoClienteListagem').val('');
-            }
-            // 3) Se quiser esconder popovers também, pode repetir se precisar
-            // $('#cepCliente, #cepJuridico, #cnpjCliente').popover('hide');
-        }
-
-    } else {
-        // === ABRIR O CARD ===
-        $cardBody.slideDown();
-        $card.removeClass('collapsed-card');
-
-        // Fecha todos os OUTROS cards
-        $('.card.card-outline.card-primary').not($card).each(function() {
-            let $otherBody = $(this).find('.card-body').first();
-            if ($otherBody.is(':visible')) {
-                $otherBody.slideUp();
-                $(this).addClass('collapsed-card');
-
-                // Se for o card de Novo Cliente, também esconde popovers
-                if ($(this).is('#cardNovoCliente, #cardNovoCliente .card')) {
-                    const inst = $('#tipoCliente').data('choicesInstance');
-                    if (inst) {
-                        inst.setChoiceByValue('');
-                    } else {
-                        $('#tipoCliente').val('');
+                    // Se for o card de Novo Cliente (ID #cardNovoCliente)
+                    if ($card.is('#cardNovoCliente, #cardNovoCliente .card')) {
+                        // 1) Reseta o select "tipoCliente"
+                        const instance = $('#tipoCliente').data('choicesInstance');
+                        if (instance) {
+                            instance.setChoiceByValue('');
+                        } else {
+                            $('#tipoCliente').val('');
+                        }
+                        // 2) Esconde formulários PF/PJ
+                        $('.cliente-form').addClass('d-none');
+                        // 3) Esconde popovers
+                        $('#cepCliente, #cepJuridico, #cnpjCliente').popover('hide');
                     }
-                    $('.cliente-form').addClass('d-none');
-                    $('#cepCliente, #cepJuridico, #cnpjCliente').popover('hide');
-                }
-                // Se for o card de Lista de Clientes, etc.
-                if ($(this).is('#cardListaClientes, #cardListaClientes .card')) {
-                    const instList = $('#tipoClienteListagem').data('choicesInstance');
-                    if (instList) {
-                        instList.setChoiceByValue('');
-                    } else {
-                        $('#tipoClienteListagem').val('');
+
+                    // Se for o card de Lista de Clientes
+                    if ($card.is('#cardListaClientes, #cardListaClientes .card')) {
+                        const instanceListagem = $('#tipoClienteListagem').data('choicesInstance');
+                        if (instanceListagem) {
+                            instanceListagem.setChoiceByValue('');
+                        } else {
+                            $('#tipoClienteListagem').val('');
+                        }
+                        // 3) Se quiser esconder popovers também, pode repetir se precisar
+                        // $('#cepCliente, #cepJuridico, #cnpjCliente').popover('hide');
                     }
+
+                } else {
+                    // === ABRIR O CARD ===
+                    $cardBody.slideDown();
+                    $card.removeClass('collapsed-card');
+
+                    // Fecha todos os OUTROS cards
+                    $('.card.card-outline.card-primary').not($card).each(function() {
+                        let $otherBody = $(this).find('.card-body').first();
+                        if ($otherBody.is(':visible')) {
+                            $otherBody.slideUp();
+                            $(this).addClass('collapsed-card');
+
+                            // Se for o card de Novo Cliente, também esconde popovers
+                            if ($(this).is('#cardNovoCliente, #cardNovoCliente .card')) {
+                                const inst = $('#tipoCliente').data('choicesInstance');
+                                if (inst) {
+                                    inst.setChoiceByValue('');
+                                } else {
+                                    $('#tipoCliente').val('');
+                                }
+                                $('.cliente-form').addClass('d-none');
+                                $('#cepCliente, #cepJuridico, #cnpjCliente').popover('hide');
+                            }
+                            // Se for o card de Lista de Clientes, etc.
+                            if ($(this).is('#cardListaClientes, #cardListaClientes .card')) {
+                                const instList = $('#tipoClienteListagem').data('choicesInstance');
+                                if (instList) {
+                                    instList.setChoiceByValue('');
+                                } else {
+                                    $('#tipoClienteListagem').val('');
+                                }
+                            }
+                        }
+                    });
                 }
-            }
-        });
-    }
-});
-
-
+            });
         });
     </script>
 @endpush

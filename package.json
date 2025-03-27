@@ -23,6 +23,7 @@
         "datatables.net": "^2.2.2",
         "datatables.net-bs5": "^2.2.2",
         "datatables.net-dt": "^2.2.2",
+        "dropzone": "^6.0.0-beta.2",
         "jquery": "^3.7.1",
         "jquery-mask-plugin": "^1.14.16",
         "jquery-validation": "^1.21.0",

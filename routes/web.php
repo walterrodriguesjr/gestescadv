@@ -171,11 +171,16 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
         'index'   => 'clientes.index',
         'create'  => 'clientes.create',
         'store'   => 'clientes.store',
-        'show'    => 'clientes.show',   
+        'show'    => 'clientes.show',
         'edit'    => 'clientes.edit',
         'update'  => 'clientes.update',
         'destroy' => 'clientes.destroy',
     ]);
+
+    Route::post('/clientes/{tipo}/{id}/documentos', [ClienteController::class, 'anexarDocumento']);
+    Route::get('/clientes/{tipo}/{id}/documentos', [ClienteController::class, 'listarDocumentos']);
+    Route::put('/documentos/{tipoCliente}/{documento}', [ClienteController::class, 'atualizarDocumentoCliente'])->name('documentos.atualizarDocumentoCliente');
+    Route::delete('/documentos/{tipoCliente}/{documento}', [ClienteController::class, 'deletarDocumentoCliente'])->name('documentos.deletarDocumentoCliente');
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])

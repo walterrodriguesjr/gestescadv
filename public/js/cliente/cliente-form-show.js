@@ -21,22 +21,36 @@ $(document).ready(function () {
 
         if (tipo === "pessoa_fisica") {
             columns = [
-                { title: "Nome", data: "nome" },
-                { title: "CPF", data: "cpf" },
+                { title: "Nome", data: "nome" }, // ou "Razão Social"
+                { title: "CPF/CNPJ", data: "cpf" }, // ou "cnpj"
                 { title: "E-mail", data: "email" },
                 {
                     title: "Celular",
                     data: "celular",
-                    render: function (data, type, row) {
+                    render: function (data) {
                         if (data) {
-                            let celularFormatado = data.replace(/\D/g, ""); 
+                            const celularFormatado = data.replace(/\D/g, "");
                             return `
                                 <a href="https://wa.me/55${celularFormatado}" target="_blank" 
                                     class="d-flex align-items-center text-success text-decoration-none">
                                     <i class="fab fa-whatsapp fa-lg mr-1"></i> ${data}
                                 </a>`;
                         }
-                        return "-"; 
+                        return "-";
+                    }
+                },
+                {
+                    title: "Documentação",
+                    data: null,
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-info btn-documentos"
+                                data-id="${row.id}"
+                                data-tipo="${row.tipo_cliente}">
+                                <i class="fas fa-folder-open"></i> Documentos
+                            </button>`;
                     }
                 },
                 {
@@ -46,25 +60,19 @@ $(document).ready(function () {
                     searchable: false,
                     render: function (data, type, row) {
                         return `
-                            <button class="btn btn-sm btn-primary btn-visualizar"
-                                data-id="${row.id}" 
-                                data-tipo="${row.tipo_cliente}">
+                            <button class="btn btn-sm btn-primary btn-visualizar" data-id="${row.id}" data-tipo="${row.tipo_cliente}">
                                 <i class="fas fa-eye"></i> Visualizar
                             </button>
-                            <button class="btn btn-sm btn-success btn-editar"
-                                data-id="${row.id}" 
-                                data-tipo="${row.tipo_cliente}">
+                            <button class="btn btn-sm btn-success btn-editar" data-id="${row.id}" data-tipo="${row.tipo_cliente}">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
-                            <button class="btn btn-sm btn-danger btn-deletar"
-                                data-id="${row.id}" 
-                                data-tipo="${row.tipo_cliente}">
+                            <button class="btn btn-sm btn-danger btn-deletar" data-id="${row.id}" data-tipo="${row.tipo_cliente}">
                                 <i class="fas fa-trash"></i> Deletar
                             </button>`;
                     }
                 }
-                
             ];
+            
 
         } else if (tipo === "pessoa_juridica") {
             columns = [
