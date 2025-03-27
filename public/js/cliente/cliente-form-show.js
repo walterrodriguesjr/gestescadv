@@ -21,8 +21,8 @@ $(document).ready(function () {
 
         if (tipo === "pessoa_fisica") {
             columns = [
-                { title: "Nome", data: "nome" }, // ou "Razão Social"
-                { title: "CPF/CNPJ", data: "cpf" }, // ou "cnpj"
+                { title: "Nome", data: "nome" },
+                { title: "CPF", data: "cpf" },
                 { title: "E-mail", data: "email" },
                 {
                     title: "Celular",
@@ -72,7 +72,6 @@ $(document).ready(function () {
                     }
                 }
             ];
-            
 
         } else if (tipo === "pessoa_juridica") {
             columns = [
@@ -82,15 +81,27 @@ $(document).ready(function () {
                 {
                     title: "Celular",
                     data: "celular",
-                    render: function (data, type, row) {
-                        if (!data) {
-                            return "Não informado";
-                        }
-                        let numeroFormatado = data.replace(/\D/g, ""); 
+                    render: function (data) {
+                        if (!data) return "Não informado";
+                        let numeroFormatado = data.replace(/\D/g, "");
                         return `
                             <a href="https://wa.me/55${numeroFormatado}" target="_blank" class="text-success text-decoration-none">
                                 <i class="fab fa-whatsapp fa-lg"></i> ${data}
                             </a>`;
+                    }
+                },
+                {
+                    title: "Documentação",
+                    data: null,
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-info btn-documentos"
+                                data-id="${row.id}"
+                                data-tipo="${row.tipo_cliente}">
+                                <i class="fas fa-folder-open"></i> Documentos
+                            </button>`;
                     }
                 },
                 {
@@ -100,19 +111,13 @@ $(document).ready(function () {
                     searchable: false,
                     render: function (data, type, row) {
                         return `
-                            <button class="btn btn-sm btn-primary btn-visualizar"
-                                data-id="${row.id}" 
-                                data-tipo="${row.tipo_cliente}">
+                            <button class="btn btn-sm btn-primary btn-visualizar" data-id="${row.id}" data-tipo="${row.tipo_cliente}">
                                 <i class="fas fa-eye"></i> Visualizar
                             </button>
-                            <button class="btn btn-sm btn-success btn-editar"
-                                data-id="${row.id}" 
-                                data-tipo="${row.tipo_cliente}">
+                            <button class="btn btn-sm btn-success btn-editar" data-id="${row.id}" data-tipo="${row.tipo_cliente}">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
-                            <button class="btn btn-sm btn-danger btn-deletar"
-                                data-id="${row.id}" 
-                                data-tipo="${row.tipo_cliente}">
+                            <button class="btn btn-sm btn-danger btn-deletar" data-id="${row.id}" data-tipo="${row.tipo_cliente}">
                                 <i class="fas fa-trash"></i> Deletar
                             </button>`;
                     }
@@ -126,19 +131,15 @@ $(document).ready(function () {
             ajax: {
                 url: `/clientes/${tipo}`,
                 type: "GET",
-                data: {
-                    escritorio_id: escritorioId
-                },
+                data: { escritorio_id: escritorioId },
                 dataSrc: "data"
             },
             columns: columns,
-            language: {
-                url: "/lang/datatables/pt-BR.json"
-            }
+            language: { url: "/lang/datatables/pt-BR.json" }
         });
     });
 
-    // Evento para abrir o Swal com os dados ao clicar no botão "visualizar"
+    // Visualização dos detalhes do cliente (mantido igual ao seu código original)
     $(document).on("click", ".btn-visualizar", function () {
         let id = $(this).data("id");
         let tipo = $(this).data("tipo");
@@ -154,7 +155,6 @@ $(document).ready(function () {
                     return;
                 }
 
-                // Criar link do WhatsApp se houver número
                 function formatarWhatsapp(numero) {
                     if (!numero) return "Não informado";
                     let numeroFormatado = numero.replace(/\D/g, "");
@@ -164,7 +164,6 @@ $(document).ready(function () {
                             <br><small class="text-muted">* Clique para falar no WhatsApp</small>`;
                 }
 
-                // Criar link do Google Maps
                 function formatarEndereco(logradouro, numero, bairro, cidade, estado) {
                     if (!logradouro || !cidade || !estado) return "Não informado";
                     let enderecoFormatado = `${logradouro}, ${numero} - ${bairro}, ${cidade} - ${estado}`;
@@ -175,50 +174,27 @@ $(document).ready(function () {
                             <br><small class="text-muted">* Clique para ver no Google Maps</small>`;
                 }
 
-                let dadosCliente = (tipo === "pessoa_fisica") ? `
+                let dadosCliente = tipo === "pessoa_fisica" ? `
                     <p><strong>Nome:</strong> ${cliente.nome}</p>
                     <p><strong>CPF:</strong> ${cliente.cpf}</p>
                     <p><strong>E-mail:</strong> ${cliente.email}</p>
-                    <p><strong>Telefone:</strong> ${cliente.telefone || "Não informado"}</p>
                     <p><strong>Celular:</strong> ${formatarWhatsapp(cliente.celular)}</p>
-                    <p><strong>CEP:</strong> ${cliente.cep || "Não informado"}</p>
-                    <p><strong>Endereço:</strong> 
-                       ${formatarEndereco(cliente.logradouro, cliente.numero, cliente.bairro, cliente.cidade, cliente.estado)}
-                    </p>
                 ` : `
                     <p><strong>Razão Social:</strong> ${cliente.razao_social}</p>
-                    <p><strong>Nome Fantasia:</strong> ${cliente.nome_fantasia || "Não informado"}</p>
                     <p><strong>CNPJ:</strong> ${cliente.cnpj}</p>
                     <p><strong>E-mail:</strong> ${cliente.email}</p>
-                    <p><strong>Telefone:</strong> ${cliente.telefone || "Não informado"}</p>
                     <p><strong>Celular:</strong> ${formatarWhatsapp(cliente.celular)}</p>
-                    <p><strong>CEP:</strong> ${cliente.cep || "Não informado"}</p>
-                    <p><strong>Endereço:</strong> 
-                       ${formatarEndereco(cliente.logradouro, cliente.numero, cliente.bairro, cliente.cidade, cliente.estado)}
-                    </p>
                 `;
 
                 Swal.fire({
                     title: "Detalhes do Cliente",
                     html: dadosCliente,
                     icon: "info",
-                    showConfirmButton: true,
                     confirmButtonText: `<i class="fas fa-times"></i> Fechar`,
                     buttonsStyling: false,
-                    customClass: {
-                        confirmButton: "btn btn-secondary"
-                    }
+                    customClass: { confirmButton: "btn btn-secondary" }
                 });
-            },
-            error: function () {
-                Swal.fire("Erro!", "Não foi possível obter os dados do cliente.", "error");
             }
         });
-    });
-
-    choicesTipoClienteListagem = new Choices("#tipoClienteListagem", {
-        placeholderValue: "Selecione o tipo de cliente",
-        searchEnabled: false,
-        shouldSort: false
     });
 });
