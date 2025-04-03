@@ -24,6 +24,7 @@ class ResetDatabase extends Command
             'EscritorioSeeder',
             'ClienteSeeder',
             'MembroSeeder',
+            'TipoServicoSeeder',
         ];
 
         foreach ($seeders as $seeder) {

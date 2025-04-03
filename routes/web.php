@@ -11,6 +11,7 @@ use App\Http\Controllers\EscritorioController;
 use App\Http\Controllers\MembroEscritorioController;
 use App\Http\Controllers\NivelAcessoController;
 use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\ServicoController;
 use App\Http\Controllers\SessaoController;
 
 /**
@@ -181,10 +182,21 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
     Route::get('/clientes/{tipo}/{id}/documentos', [ClienteController::class, 'listarDocumentos']);
     Route::put('/documentos/{tipoCliente}/{documento}', [ClienteController::class, 'atualizarDocumentoCliente'])->name('documentos.atualizarDocumentoCliente');
     Route::delete('/documentos/{tipoCliente}/{documento}', [ClienteController::class, 'deletarDocumentoCliente'])->name('documentos.deletarDocumentoCliente');
+
+    Route::get('/servicos', [ServicoController::class, 'index'])->name('servicos.index');
+
+    Route::get('/tipo_servicos/{id}', [ServicoController::class, 'listar_tipo_servico'])->name('tipo_servicos.listar_tipo_servico');
+    Route::post('/tipo_servicos/{id}', [ServicoController::class, 'cadastrar_tipo_servico'])->name('tipo_servicos.cadastrar_tipo_servico');
+    Route::get('/buscar_tipo_servicos/{id}', [ServicoController::class, 'buscar_tipo_servicos'])->name('tipo_servicos.buscar_tipo_servicos');
+    Route::put('/atualizar_tipo_servico/{id}', [ServicoController::class, 'atualizar_tipo_servico'])->name('tipo_servicos.atualizar_tipo_servico');
+    Route::delete('/deletar_tipo_servico/{id}', [ServicoController::class, 'deletar_tipo_servico'])->name('tipo_servicos.deletar_tipo_servico');
+
+    
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])
     ->name('membro-escritorio.show');
+
 
 /**
  * Rotas de autenticação

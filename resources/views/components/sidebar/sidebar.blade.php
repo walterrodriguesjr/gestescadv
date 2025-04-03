@@ -95,9 +95,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('servicos.index') }}" class="nav-link">
                         <i class="nav-icon fas fa-gavel"></i>
-                        <p>Processos</p>
+                        <p>Serviços</p>
                     </a>
                 </li>
                 <li class="nav-item">
