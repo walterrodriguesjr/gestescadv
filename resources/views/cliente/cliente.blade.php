@@ -42,7 +42,7 @@
                         <div class="col-md-4">
                             <label for="emailCliente">E-mail</label>
                             <input type="email" class="form-control" id="emailCliente" name="email"
-                                placeholder="exemplo@email.com" required>
+                                placeholder="exemplo@email.com">
                         </div>
                         <div class="col-md-2">
                             <label for="cpfCliente">CPF</label>
@@ -136,7 +136,7 @@
                         <div class="col-md-3">
                             <label for="emailJuridico">E-mail</label>
                             <input type="email" class="form-control" id="emailJuridico" name="email"
-                                placeholder="exemplo@email.com" required>
+                                placeholder="exemplo@email.com">
                         </div>
                     </div>
 

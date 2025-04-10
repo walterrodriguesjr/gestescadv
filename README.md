@@ -9,21 +9,51 @@
 
 ---
 
-# Template Laravel 11 - Login, Recuperação de Senha e Autenticação em Dois Fatores
+# Gestão Jurídica - Sistema Completo em Laravel 11
 
-Este é um **template completo** para projetos Laravel 11, incluindo:
+Este é um sistema completo de gestão jurídica desenvolvido em Laravel 11, que inclui funcionalidades essenciais de autenticação, gerenciamento de clientes, serviços jurídicos, anexos e agendamentos.
 
-- Autenticação de usuários (Login e Logout).
-- Recuperação de senha por e-mail.
-- Autenticação em dois fatores (2FA) com suporte a códigos enviados por e-mail.
-- Configuração pronta para uso com Docker e Laravel Sail.
+🚀 Funcionalidades Implementadas
+
+Autenticação de usuários (Login e Logout)
+
+Recuperação de senha por e-mail
+
+Autenticação em dois fatores (2FA) via e-mail
+
+Cadastro rápido e avançado de clientes (Pessoa Física e Jurídica)
+
+Cadastro e gerenciamento de tipos de serviços jurídicos
+
+Upload e gerenciamento de arquivos anexados aos serviços
+
+Agendamento opcional de consultas e atendimentos jurídicos
+
+Validações robustas no frontend com SweetAlert e no backend com Laravel Validator
+
+Configuração pronta para uso com Docker e Laravel Sail
+
+---
+
+🛠️ Tecnologias Utilizadas
+
+Laravel 11
+
+PHP 8.2
+
+JavaScript (jQuery)
+
+Bootstrap 5
+
+Choices.js (Select avançado)
+
+SweetAlert2
+
+Docker e Docker Compose
 
 ---
 
 ## Sobre o Projeto
-
-Este template foi desenvolvido por **Walter Rodrigues Jr.** para acelerar o desenvolvimento de novos projetos Laravel com práticas modernas e recursos essenciais de autenticação e segurança.
-
 O projeto é configurado para funcionar imediatamente com Docker, facilitando o setup do ambiente de desenvolvimento.
 
 ---
@@ -40,8 +70,8 @@ O projeto é configurado para funcionar imediatamente com Docker, facilitando o 
 ### Passo 1: Clone o Repositório
 
 ```bash
-git clone https://github.com/walterrodriguesjr/template-laravel-11-com-login-recuperacao-de-senha-two-factor-completo.git
-cd template-laravel-11-com-login-recuperacao-de-senha-two-factor-completo
+git clone https://github.com/seu-usuario/gestao-juridica.git
+cd gestao-juridica
 
 Passo 2: Configuração Inicial
     1.Copie o arquivo .env.example para .env:

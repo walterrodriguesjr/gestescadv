@@ -210,22 +210,12 @@ function inicializarValidacaoFormulario(tipo) {
     const rulesPF = {
         nome: { required: true },
         cpf: { required: true },
-        email: { required: true, email: true },
         celular: { required: true },
-        cep: { required: true },
-        logradouro: { required: true },
-        estado: { required: true },
-        cidade: { required: true }
     };
     const rulesPJ = {
         razao_social: { required: true },
         cnpj: { required: true },
-        email: { required: true, email: true },
-        cep: { required: true },
-        logradouro: { required: true },
         celular: { required: true },
-        estado: { required: true },
-        cidade: { required: true }
     };
 
     $form.validate({
@@ -233,18 +223,10 @@ function inicializarValidacaoFormulario(tipo) {
         messages: {
             nome: { required: "Informe o nome." },
             cpf: { required: "Informe o CPF." },
-            email: { 
-                required: "Informe o e-mail.",
-                email: "E-mail inválido."
-            },
-            celular: { required: "Informe o celular." },
-            cep: { required: "Informe o CEP." },
-            logradouro: { required: "Informe o logradouro." },
-            estado: { required: "Selecione o estado." },
-            cidade: { required: "Selecione a cidade." },
-
+            
             razao_social: { required: "Informe a Razão Social." },
-            cnpj: { required: "Informe o CNPJ." }
+            cnpj: { required: "Informe o CNPJ." },
+            celular: { required: "Informe o celular." },
         },
         errorClass: "text-danger small",
         errorElement: "span",

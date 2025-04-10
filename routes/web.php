@@ -185,11 +185,14 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
 
     Route::get('/servicos', [ServicoController::class, 'index'])->name('servicos.index');
 
+    Route::get('/listar_tipo_servico/{id}', [ServicoController::class, 'listar_tipo_servico'])->name('tipo_servicos.listar_tipo_servico');
     Route::get('/tipo_servicos/{id}', [ServicoController::class, 'listar_tipo_servico'])->name('tipo_servicos.listar_tipo_servico');
     Route::post('/tipo_servicos/{id}', [ServicoController::class, 'cadastrar_tipo_servico'])->name('tipo_servicos.cadastrar_tipo_servico');
     Route::get('/buscar_tipo_servicos/{id}', [ServicoController::class, 'buscar_tipo_servicos'])->name('tipo_servicos.buscar_tipo_servicos');
     Route::put('/atualizar_tipo_servico/{id}', [ServicoController::class, 'atualizar_tipo_servico'])->name('tipo_servicos.atualizar_tipo_servico');
     Route::delete('/deletar_tipo_servico/{id}', [ServicoController::class, 'deletar_tipo_servico'])->name('tipo_servicos.deletar_tipo_servico');
+
+    Route::post('/servicos', [ServicoController::class, 'store'])->name('servicos.store');
 
     
 });

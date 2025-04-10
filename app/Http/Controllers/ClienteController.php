@@ -22,97 +22,96 @@ class ClienteController
 {
 
     public function atualizarDocumentoCliente(Request $request, string $tipoCliente, string $idDocumento)
-{
-    $request->validate(['nome_original' => 'required|string|max:255']);
+    {
+        $request->validate(['nome_original' => 'required|string|max:255']);
 
-    $model = $tipoCliente === 'pessoa_fisica'
-        ? DocumentoClientePessoaFisica::findOrFail($idDocumento)
-        : DocumentoClientePessoaJuridica::findOrFail($idDocumento);
-
-    $model->nome_original = $request->nome_original;
-    $model->save();
-
-    return response()->json(['message' => 'Nome atualizado com sucesso!']);
-}
-
-public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento)
-{
-    DB::beginTransaction();
-
-    try {
         $model = $tipoCliente === 'pessoa_fisica'
             ? DocumentoClientePessoaFisica::findOrFail($idDocumento)
             : DocumentoClientePessoaJuridica::findOrFail($idDocumento);
 
-        // Verifique se caminho_arquivo existe antes de deletar
-        if ($model->caminho_arquivo && Storage::disk('public')->exists($model->caminho_arquivo)) {
-            Storage::disk('public')->delete($model->caminho_arquivo);
-        }
+        $model->nome_original = $request->nome_original;
+        $model->save();
 
-        $model->delete();
-
-        DB::commit();
-
-        return response()->json(['message' => 'Documento excluído com sucesso!']);
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json(['message' => 'Erro ao excluir documento.'], 500);
+        return response()->json(['message' => 'Nome atualizado com sucesso!']);
     }
-}
+
+    public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento)
+    {
+        DB::beginTransaction();
+
+        try {
+            $model = $tipoCliente === 'pessoa_fisica'
+                ? DocumentoClientePessoaFisica::findOrFail($idDocumento)
+                : DocumentoClientePessoaJuridica::findOrFail($idDocumento);
+
+            // Verifique se caminho_arquivo existe antes de deletar
+            if ($model->caminho_arquivo && Storage::disk('public')->exists($model->caminho_arquivo)) {
+                Storage::disk('public')->delete($model->caminho_arquivo);
+            }
+
+            $model->delete();
+
+            DB::commit();
+
+            return response()->json(['message' => 'Documento excluído com sucesso!']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Erro ao excluir documento.'], 500);
+        }
+    }
 
 
     // Anexar Documento
     public function anexarDocumento(Request $request, $tipo, $id)
-{
-    $request->validate([
-        'file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
-        'nome_original' => 'required|string|max:255',
-    ]);
-
-    try {
-        DB::beginTransaction();
-
-        $usuarioId = Auth::id(); // ID do usuário logado
-
-        $arquivo = $request->file('file');
-
-        // Obtém extensão original
-        $extensao = $arquivo->getClientOriginalExtension();
-
-        // Sanitiza o nome original fornecido pelo usuário
-        $nomeArquivoSanitizado = Str::slug(pathinfo($request->nome_original, PATHINFO_FILENAME));
-
-        // Monta o nome completo do arquivo com timestamp
-        $nomeArquivo = $nomeArquivoSanitizado . '-' . date('YmdHis') . '.' . $extensao;
-
-        // Define o caminho desejado
-        $caminho = $arquivo->storeAs("documento-usuario/{$usuarioId}", $nomeArquivo, 'public');
-
-        // Determina o model apropriado
-        $model = ($tipo === 'pessoa_fisica') 
-            ? DocumentoClientePessoaFisica::class 
-            : DocumentoClientePessoaJuridica::class;
-
-        $cliente_id_column = ($tipo === 'pessoa_fisica') 
-            ? 'cliente_pessoa_fisica_id' 
-            : 'cliente_pessoa_juridica_id';
-
-        // Salva no banco
-        $model::create([
-            $cliente_id_column => $id,
-            'nome_original' => $request->nome_original,
-            'nome_arquivo' => $caminho
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'nome_original' => 'required|string|max:255',
         ]);
 
-        DB::commit();
-        return response()->json(['success' => true]);
+        try {
+            DB::beginTransaction();
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error("Erro ao anexar documento", ['erro' => $e->getMessage()]);
-        return response()->json(['success' => false], 500);
+            $usuarioId = Auth::id(); // ID do usuário logado
+
+            $arquivo = $request->file('file');
+
+            // Obtém extensão original
+            $extensao = $arquivo->getClientOriginalExtension();
+
+            // Sanitiza o nome original fornecido pelo usuário
+            $nomeArquivoSanitizado = Str::slug(pathinfo($request->nome_original, PATHINFO_FILENAME));
+
+            // Monta o nome completo do arquivo com timestamp
+            $nomeArquivo = $nomeArquivoSanitizado . '-' . date('YmdHis') . '.' . $extensao;
+
+            // Define o caminho desejado
+            $caminho = $arquivo->storeAs("documento-usuario/{$usuarioId}", $nomeArquivo, 'public');
+
+            // Determina o model apropriado
+            $model = ($tipo === 'pessoa_fisica')
+                ? DocumentoClientePessoaFisica::class
+                : DocumentoClientePessoaJuridica::class;
+
+            $cliente_id_column = ($tipo === 'pessoa_fisica')
+                ? 'cliente_pessoa_fisica_id'
+                : 'cliente_pessoa_juridica_id';
+
+            // Salva no banco
+            $model::create([
+                $cliente_id_column => $id,
+                'nome_original' => $request->nome_original,
+                'nome_arquivo' => $caminho
+            ]);
+
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Erro ao anexar documento", ['erro' => $e->getMessage()]);
+            return response()->json(['success' => false], 500);
+        }
     }
-}
 
     // Listar Documentos
     public function listarDocumentos($tipo, $id)
@@ -175,9 +174,9 @@ public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento
                 $validatedData = $request->validate([
                     'nome' => 'required|string|max:255',
                     'cpf' => 'required|string|max:20',
-                    'email' => 'required|email|max:255',
+                    'email' => 'nullable|email|max:255',
                     'celular' => 'required|string|max:20',
-                    'cep' => 'required|string|max:10',
+                    'cep' => 'nullable|string|max:10',
                     'logradouro' => 'nullable|string|max:255',
                     'numero' => 'nullable|string|max:10',
                     'bairro' => 'nullable|string|max:255',
@@ -185,24 +184,25 @@ public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento
                     'estado' => 'nullable|string|max:255',
                 ]);
 
-                // Verifica se CPF já existe no mesmo escritório
+                $cpf = preg_replace('/\D/', '', $validatedData['cpf']);
+
                 $cpfExists = ClientePessoaFisica::where('escritorio_id', $escritorio->id)
                     ->get()
-                    ->filter(fn($cliente) => Crypt::decryptString($cliente->cpf) === $validatedData['cpf'])
+                    ->filter(fn($cliente) => Crypt::decryptString($cliente->cpf) === $cpf)
                     ->first();
 
                 if ($cpfExists) {
-                    Log::warning('CPF já cadastrado para este escritório', ['cpf' => $validatedData['cpf']]);
+                    Log::warning('CPF já cadastrado para este escritório', ['cpf' => $cpf]);
                     return response()->json(['message' => 'CPF já cadastrado neste escritório.'], 409);
                 }
 
                 $cliente = ClientePessoaFisica::create([
                     'escritorio_id' => $escritorio->id,
                     'nome' => $validatedData['nome'],
-                    'cpf' => Crypt::encryptString($validatedData['cpf']),
-                    'email' => Crypt::encryptString($validatedData['email']),
+                    'cpf' => Crypt::encryptString($cpf),
+                    'email' => Crypt::encryptString($validatedData['email'] ?? ''),
                     'celular' => Crypt::encryptString($validatedData['celular']),
-                    'cep' => Crypt::encryptString($validatedData['cep']),
+                    'cep' => Crypt::encryptString($validatedData['cep'] ?? ''),
                     'logradouro' => Crypt::encryptString($validatedData['logradouro'] ?? ''),
                     'numero' => Crypt::encryptString($validatedData['numero'] ?? ''),
                     'bairro' => Crypt::encryptString($validatedData['bairro'] ?? ''),
@@ -218,25 +218,26 @@ public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento
                     'razao_social' => 'required|string|max:255',
                     'nome_fantasia' => 'nullable|string|max:255',
                     'cnpj' => 'required|string|max:20',
-                    'email' => 'required|email|max:255',
+                    'email' => 'nullable|email|max:255',
                     'telefone' => 'nullable|string|max:20',
-                    'celular' => 'nullable|string|max:20',
-                    'cep' => 'required|string|max:10',
-                    'logradouro' => 'required|string|max:255',
+                    'celular' => 'required|string|max:20',
+                    'cep' => 'nullable|string|max:10',
+                    'logradouro' => 'nullable|string|max:255',
                     'numero' => 'nullable|string|max:10',
                     'bairro' => 'nullable|string|max:255',
                     'cidade' => 'nullable|string|max:255',
                     'estado' => 'nullable|string|max:255',
                 ]);
 
-                // Verifica se CNPJ já existe no mesmo escritório
+                $cnpj = preg_replace('/\D/', '', $validatedData['cnpj']);
+
                 $cnpjExists = ClientePessoaJuridica::where('escritorio_id', $escritorio->id)
                     ->get()
-                    ->filter(fn($cliente) => Crypt::decryptString($cliente->cnpj) === $validatedData['cnpj'])
+                    ->filter(fn($cliente) => Crypt::decryptString($cliente->cnpj) === $cnpj)
                     ->first();
 
                 if ($cnpjExists) {
-                    Log::warning('CNPJ já cadastrado para este escritório', ['cnpj' => $validatedData['cnpj']]);
+                    Log::warning('CNPJ já cadastrado para este escritório', ['cnpj' => $cnpj]);
                     return response()->json(['message' => 'CNPJ já cadastrado neste escritório.'], 409);
                 }
 
@@ -244,16 +245,17 @@ public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento
                     'escritorio_id' => $escritorio->id,
                     'razao_social' => $validatedData['razao_social'],
                     'nome_fantasia' => $validatedData['nome_fantasia'] ?? null,
-                    'cnpj' => Crypt::encryptString($validatedData['cnpj']),
-                    'email' => Crypt::encryptString($validatedData['email']),
-                    'telefone' => $validatedData['telefone'] ? Crypt::encryptString($validatedData['telefone']) : null,
-                    'celular' => $validatedData['celular'] ? Crypt::encryptString($validatedData['celular']) : null,
-                    'cep' => Crypt::encryptString($validatedData['cep']),
-                    'logradouro' => Crypt::encryptString($validatedData['logradouro']),
-                    'numero' => $validatedData['numero'] ? Crypt::encryptString($validatedData['numero']) : null,
-                    'bairro' => $validatedData['bairro'] ? Crypt::encryptString($validatedData['bairro']) : null,
-                    'cidade' => $validatedData['cidade'] ? Crypt::encryptString($validatedData['cidade']) : null,
-                    'estado' => $validatedData['estado'] ? Crypt::encryptString($validatedData['estado']) : null,
+                    'cnpj' => Crypt::encryptString($cnpj),
+                    'email' => isset($validatedData['email']) ? Crypt::encryptString($validatedData['email']) : null,
+                    'telefone' => isset($validatedData['telefone']) ? Crypt::encryptString($validatedData['telefone']) : null,
+                    'celular' => Crypt::encryptString($validatedData['celular']),
+                    'cep' => isset($validatedData['cep']) ? Crypt::encryptString($validatedData['cep']) : null,
+                    'logradouro' => isset($validatedData['logradouro']) ? Crypt::encryptString($validatedData['logradouro']) : null,
+                    'numero' => isset($validatedData['numero']) ? Crypt::encryptString($validatedData['numero']) : null,
+                    'bairro' => isset($validatedData['bairro']) ? Crypt::encryptString($validatedData['bairro']) : null,
+                    'cidade' => isset($validatedData['cidade']) ? Crypt::encryptString($validatedData['cidade']) : null,
+                    'estado' => isset($validatedData['estado']) ? Crypt::encryptString($validatedData['estado']) : null,
+
                 ]);
 
                 Log::info('Cliente Pessoa Jurídica cadastrado com sucesso!', ['cliente_id' => $cliente->id]);
@@ -266,10 +268,11 @@ public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento
             return response()->json(['message' => 'Cliente cadastrado com sucesso!'], 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Erro ao cadastrar cliente', ['exception' => $e->getMessage()]);
-            return response()->json(['message' => 'Erro ao cadastrar cliente.'], 500);
+            Log::error('Erro ao cadastrar cliente', ['exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['message' => 'Erro ao cadastrar cliente.', 'erro' => $e->getMessage()], 500);
         }
     }
+
 
 
 
@@ -376,11 +379,10 @@ public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento
                 $validatedData = $request->validate([
                     'nome'       => 'required|string|max:255',
                     'cpf'        => 'required|string|max:20',
-                    'email'      => 'required|email|max:255',
+                    'email'      => 'nullable|email|max:255',
                     'celular'    => 'required|string|max:20',
                     'telefone'   => 'nullable|string|max:20',
-
-                    'cep'        => 'required|string|max:10',
+                    'cep'        => 'nullable|string|max:10',
                     'logradouro' => 'nullable|string|max:255',
                     'numero'     => 'nullable|string|max:10',
                     'bairro'     => 'nullable|string|max:255',
@@ -415,34 +417,20 @@ public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento
 
                 // (D) Atualiza dados (criptografa, evitando erro caso as chaves não existam)
                 $cliente->update([
-                    'nome'    => $validatedData['nome'],
-                    'cpf'     => Crypt::encryptString($validatedData['cpf']),
-                    'email'   => Crypt::encryptString($validatedData['email']),
+                    'nome' => $validatedData['nome'],
+                    'cpf' => Crypt::encryptString($validatedData['cpf']),
                     'celular' => Crypt::encryptString($validatedData['celular']),
 
-                    'telefone' => (isset($validatedData['telefone']) && $validatedData['telefone'] !== '')
-                        ? Crypt::encryptString($validatedData['telefone'])
-                        : null,
-
-                    'cep'        => (isset($validatedData['cep']) && $validatedData['cep'] !== '')
-                        ? Crypt::encryptString($validatedData['cep'])
-                        : null,
-                    'logradouro' => (isset($validatedData['logradouro']) && $validatedData['logradouro'] !== '')
-                        ? Crypt::encryptString($validatedData['logradouro'])
-                        : null,
-                    'numero'     => (isset($validatedData['numero']) && $validatedData['numero'] !== '')
-                        ? Crypt::encryptString($validatedData['numero'])
-                        : null,
-                    'bairro'     => (isset($validatedData['bairro']) && $validatedData['bairro'] !== '')
-                        ? Crypt::encryptString($validatedData['bairro'])
-                        : null,
-                    'cidade'     => (isset($validatedData['cidade']) && $validatedData['cidade'] !== '')
-                        ? Crypt::encryptString($validatedData['cidade'])
-                        : null,
-                    'estado'     => (isset($validatedData['estado']) && $validatedData['estado'] !== '')
-                        ? Crypt::encryptString($validatedData['estado'])
-                        : null,
+                    'email' => !empty($validatedData['email']) ? Crypt::encryptString($validatedData['email']) : null,
+                    'telefone' => !empty($validatedData['telefone']) ? Crypt::encryptString($validatedData['telefone']) : null,
+                    'cep' => !empty($validatedData['cep']) ? Crypt::encryptString($validatedData['cep']) : null,
+                    'logradouro' => !empty($validatedData['logradouro']) ? Crypt::encryptString($validatedData['logradouro']) : null,
+                    'numero' => !empty($validatedData['numero']) ? Crypt::encryptString($validatedData['numero']) : null,
+                    'bairro' => !empty($validatedData['bairro']) ? Crypt::encryptString($validatedData['bairro']) : null,
+                    'cidade' => !empty($validatedData['cidade']) ? Crypt::encryptString($validatedData['cidade']) : null,
+                    'estado' => !empty($validatedData['estado']) ? Crypt::encryptString($validatedData['estado']) : null,
                 ]);
+
 
                 Log::info('Cliente PF atualizado com sucesso!', ['cliente_id' => $cliente->id]);
             } elseif ($request->tipo_cliente === 'pessoa_juridica') {
@@ -452,12 +440,11 @@ public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento
                     'razao_social'  => 'required|string|max:255',
                     'nome_fantasia' => 'nullable|string|max:255',
                     'cnpj'          => 'required|string|max:20',
-                    'email'         => 'required|email|max:255',
+                    'email'         => 'nullable|email|max:255',
                     'telefone'      => 'nullable|string|max:20',
-                    'celular'       => 'nullable|string|max:20',
-
-                    'cep'           => 'required|string|max:10',
-                    'logradouro'    => 'required|string|max:255',
+                    'celular'       => 'required|string|max:20',
+                    'cep'           => 'nullable|string|max:10',
+                    'logradouro'    => 'nullable|string|max:255',
                     'numero'        => 'nullable|string|max:10',
                     'bairro'        => 'nullable|string|max:255',
                     'cidade'        => 'nullable|string|max:255',
@@ -492,36 +479,19 @@ public function deletarDocumentoCliente(string $tipoCliente, string $idDocumento
                 // (D) Atualiza dados
                 $cliente->update([
                     'razao_social' => $validatedData['razao_social'],
-                    'nome_fantasia' => $validatedData['nome_fantasia'] ?? null,
-
-                    'cnpj'    => Crypt::encryptString($validatedData['cnpj']),
-                    'email'   => Crypt::encryptString($validatedData['email']),
-                    'telefone' => (isset($validatedData['telefone']) && $validatedData['telefone'] !== '')
-                        ? Crypt::encryptString($validatedData['telefone'])
-                        : null,
-                    'celular' => (isset($validatedData['celular']) && $validatedData['celular'] !== '')
-                        ? Crypt::encryptString($validatedData['celular'])
-                        : null,
-
-                    'cep'        => (isset($validatedData['cep']) && $validatedData['cep'] !== '')
-                        ? Crypt::encryptString($validatedData['cep'])
-                        : null,
-                    'logradouro' => (isset($validatedData['logradouro']) && $validatedData['logradouro'] !== '')
-                        ? Crypt::encryptString($validatedData['logradouro'])
-                        : null,
-                    'numero'     => (isset($validatedData['numero']) && $validatedData['numero'] !== '')
-                        ? Crypt::encryptString($validatedData['numero'])
-                        : null,
-                    'bairro'     => (isset($validatedData['bairro']) && $validatedData['bairro'] !== '')
-                        ? Crypt::encryptString($validatedData['bairro'])
-                        : null,
-                    'cidade'     => (isset($validatedData['cidade']) && $validatedData['cidade'] !== '')
-                        ? Crypt::encryptString($validatedData['cidade'])
-                        : null,
-                    'estado'     => (isset($validatedData['estado']) && $validatedData['estado'] !== '')
-                        ? Crypt::encryptString($validatedData['estado'])
-                        : null,
+                    'cnpj' => Crypt::encryptString($validatedData['cnpj']),
+                    'celular' => Crypt::encryptString($validatedData['celular']),
+                    'nome_fantasia' => !empty($validatedData['nome_fantasia']) ? $validatedData['nome_fantasia'] : null,
+                    'email' => !empty($validatedData['email']) ? Crypt::encryptString($validatedData['email']) : null,
+                    'telefone' => !empty($validatedData['telefone']) ? Crypt::encryptString($validatedData['telefone']) : null,
+                    'cep' => !empty($validatedData['cep']) ? Crypt::encryptString($validatedData['cep']) : null,
+                    'logradouro' => !empty($validatedData['logradouro']) ? Crypt::encryptString($validatedData['logradouro']) : null,
+                    'numero' => !empty($validatedData['numero']) ? Crypt::encryptString($validatedData['numero']) : null,
+                    'bairro' => !empty($validatedData['bairro']) ? Crypt::encryptString($validatedData['bairro']) : null,
+                    'cidade' => !empty($validatedData['cidade']) ? Crypt::encryptString($validatedData['cidade']) : null,
+                    'estado' => !empty($validatedData['estado']) ? Crypt::encryptString($validatedData['estado']) : null,
                 ]);
+
 
                 Log::info('Cliente PJ atualizado com sucesso!', ['cliente_id' => $cliente->id]);
             } else {

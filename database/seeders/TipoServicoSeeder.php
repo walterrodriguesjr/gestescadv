@@ -13,6 +13,7 @@ class TipoServicoSeeder extends Seeder
     public function run(): void
     {
         $servicos = [
+            'Ainda não definido',
             'Consultoria',
             'Contrato',
             'Trabalhista',

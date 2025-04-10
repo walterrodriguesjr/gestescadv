@@ -1,6 +1,6 @@
 $(document).ready(function () {
 
-    
+
     // Função genérica para inicializar popovers
     function inicializarPopover($input, mensagem) {
         $input.popover({
@@ -435,6 +435,7 @@ $(document).ready(function () {
             }, 400);
         }
     }
+
     function preencherCnpjOpen(data) {
         if (!data || data.error) {
             Swal.fire({
@@ -486,22 +487,12 @@ $(document).ready(function () {
         rules: {
             nome: { required: true },
             cpf: { required: true },
-            email: { required: true, email: true },
             celular: { required: true },
-            cep: { required: true },
-            logradouro: { required: true }
-            // numero, bairro, estado, cidade => não obrigatórios
         },
         messages: {
             nome: { required: "Informe o nome do cliente." },
             cpf: { required: "Informe o CPF." },
-            email: {
-                required: "Informe o email.",
-                email: "Informe um email válido."
-            },
             celular: { required: "Informe o celular." },
-            cep: { required: "Informe o CEP." },
-            logradouro: { required: "Informe o logradouro." }
         },
         errorClass: "text-danger small",
         errorElement: "span",
@@ -523,7 +514,7 @@ $(document).ready(function () {
             tipo_cliente: "pessoa_fisica",
             nome: $("#nomeCliente").val(),
             cpf: $("#cpfCliente").val(),
-            email: $("#emailCliente").val(),
+            email: $("#emailCliente").val() || null,
             celular: $("#celularCliente").val() || null,
             cep: $("#cepCliente").val() || null,
             logradouro: $("#logradouroCliente").val() || null,
@@ -567,20 +558,11 @@ $(document).ready(function () {
         rules: {
             razao_social: { required: true },
             cnpj: { required: true },
-            email: { required: true, email: true },
-            cep: { required: true },
-            logradouro: { required: true },
             celular: { required: true }
         },
         messages: {
             razao_social: { required: "Informe a Razão Social." },
             cnpj: { required: "Informe o CNPJ." },
-            email: {
-                required: "Informe o email.",
-                email: "Digite um email válido."
-            },
-            cep: { required: "Informe o CEP." },
-            logradouro: { required: "Informe o logradouro." },
             celular: { required: "Informe o celular." }
         },
         errorClass: "text-danger small",
@@ -606,8 +588,8 @@ $(document).ready(function () {
             nome_fantasia: $("#nomeFantasia").val() || null,
             cnpj: $("#cnpjCliente").val(),
             telefone: $("#telefoneJuridico").val() || null,
-            celular: $("#celularJuridico").val() || null,
-            email: $("#emailJuridico").val(),
+            celular: $("#celularJuridico").val(),
+            email: $("#emailJuridico").val() || null,
             cep: $("#cepJuridico").val() || null,
             logradouro: $("#logradouroJuridico").val() || null,
             numero: $("#numeroJuridico").val() || null,
@@ -645,12 +627,12 @@ $(document).ready(function () {
 
 });
 
-$(function() {
+$(function () {
     // 1) Quando qualquer card for expandido:
     //    fecha os demais (caso tenha vários).
-    $('.card[data-card-widget="collapse"]').on('expanded.lte.cardwidget', function() {
+    $('.card[data-card-widget="collapse"]').on('expanded.lte.cardwidget', function () {
         var cardAberto = this;
-        $('.card[data-card-widget="collapse"]').each(function() {
+        $('.card[data-card-widget="collapse"]').each(function () {
             if (this !== cardAberto) {
                 // Fecha os outros
                 $(this).CardWidget('collapse');
@@ -660,11 +642,11 @@ $(function() {
 
     // 2) Quando o card de "Novo Cliente" for fechado,
     //    voltamos o select tipoCliente para "Selecione".
-    $('#cardNovoCliente .card[data-card-widget="collapse"]').on('collapsed.lte.cardwidget', function() {
+    $('#cardNovoCliente .card[data-card-widget="collapse"]').on('collapsed.lte.cardwidget', function () {
         // Se você usa Choices.js:
         const instance = $('#tipoCliente').data('choicesInstance');
         if (instance) {
-            instance.setChoiceByValue(''); 
+            instance.setChoiceByValue('');
         } else {
             // Se não tiver Choices, basta resetar com jQuery normal
             $('#tipoCliente').val('');
@@ -678,7 +660,7 @@ $(function() {
 
     // 3) Quando o card de "Lista de Clientes" for fechado,
     //    voltamos o select tipoClienteListagem para "Selecione".
-    $('#cardListarClientes .card[data-card-widget="collapse"]').on('collapsed.lte.cardwidget', function() {
+    $('#cardListarClientes .card[data-card-widget="collapse"]').on('collapsed.lte.cardwidget', function () {
         // Se você usa Choices.js:
         const instanceListagem = $('#tipoClienteListagem').data('choicesInstance');
         if (instanceListagem) {

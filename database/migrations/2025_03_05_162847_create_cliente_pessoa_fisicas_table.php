@@ -11,10 +11,10 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('escritorio_id')->constrained()->onDelete('cascade');
             $table->text('nome');
-            $table->text('cpf'); // Removido unique()
+            $table->text('cpf'); 
             $table->text('telefone')->nullable();
             $table->text('celular');
-            $table->text('email'); // Removido unique()
+            $table->text('email')->nullable();
             $table->text('cep')->nullable();
             $table->text('logradouro')->nullable();
             $table->text('numero')->nullable();
