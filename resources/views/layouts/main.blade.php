@@ -7,6 +7,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Principal</title>
 
+    <!-- Fontes locais -->
+    <style>
+        @font-face {
+            font-family: 'Nunito';
+            src: url("{{ asset('fonts/nunito/Nunito-VariableFont_wght.ttf') }}") format('truetype');
+            font-weight: 100 900;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Nunito';
+            src: url("{{ asset('fonts/nunito/Nunito-Italic-VariableFont_wght.ttf') }}") format('truetype');
+            font-weight: 100 900;
+            font-style: italic;
+            font-display: swap;
+        }
+
+        html,
+        body {
+            font-family: 'Nunito', sans-serif !important;
+        }
+
+        /* Container do campo */
+    </style>
+
+    <!-- Adicione no <head> -->
+
+
     <!-- AdminLTE CSS via CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.0.0/dist/css/adminlte.min.css">
 
@@ -34,10 +63,13 @@
     <!-- CSS personalizado view escritorio-->
     <link rel="stylesheet" href="{{ asset('css/escritorio/escritorio-form.css') }}">
 
+    <link rel="stylesheet" href="{{ asset('css/escritorio/escritorio-form.css') }}">
+
+    <!-- Override visual do Choices.js -->
+    <link rel="stylesheet" href="{{ asset('css/custom/choices-overrides.css') }}">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-
-
 
 <body class="hold-transition sidebar-mini layout-fixed sidebar-collapse">
     <div class="wrapper">

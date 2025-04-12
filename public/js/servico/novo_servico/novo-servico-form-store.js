@@ -40,7 +40,7 @@ function carregarTiposDeServico() {
     $.ajax({
         url: `/listar_tipo_servico/${escritorioId}`,
         method: 'GET',
-        success: function(resp) {
+        success: function (resp) {
             if (resp.success && resp.data && resp.data.length) {
                 const $select = $('#tipoServico');
                 $select.empty().append('<option value="">Selecione um tipo de serviço</option>');
@@ -63,7 +63,7 @@ function carregarTiposDeServico() {
                 Swal.fire("Aviso", "Nenhum tipo de serviço foi encontrado.", "warning");
             }
         },
-        error: function(xhr) {
+        error: function (xhr) {
             Swal.fire("Erro", xhr.responseJSON?.message || "Erro ao carregar tipos de serviço.", "error");
         }
     });
@@ -93,7 +93,7 @@ function inicializarTipoCliente() {
     }
 
     // Evento: ao clicar no checkbox "Cliente novo?"
-    $(document).on('change', '#novoClienteCheckbox', function() {
+    $(document).on('change', '#novoClienteCheckbox', function () {
         const tipoClienteSelecionado = $('#tipoCliente').val();
 
         if (!tipoClienteSelecionado) {
@@ -182,7 +182,7 @@ function inicializarTipoCliente() {
                         method: 'POST',
                         headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
                         data: result.value,
-                        success: function(resp) {
+                        success: function (resp) {
                             const tempoDecorrido = Date.now() - inicio;
                             const atraso = tempoMinimo - tempoDecorrido;
                             const tipoConvertido = result.value.tipo_cliente;
@@ -196,7 +196,7 @@ function inicializarTipoCliente() {
                                     url: `/clientes/${tipoConvertido}`,
                                     method: 'GET',
                                     data: { escritorio_id: escritorioId },
-                                    success: function(response) {
+                                    success: function (response) {
                                         const clientes = response.data || [];
                                         const $clienteSelect = $('#clienteServico');
 
@@ -238,7 +238,7 @@ function inicializarTipoCliente() {
                                 });
                             }, atraso > 0 ? atraso : 0);
                         },
-                        error: function(xhr) {
+                        error: function (xhr) {
                             Swal.close();
                             Swal.fire("Erro", xhr.responseJSON?.message || "Erro ao cadastrar cliente.", "error");
                             $('#clienteServico').prop('disabled', false);
@@ -257,7 +257,7 @@ function inicializarTipoCliente() {
 }
 
 // (D) Ao mudar select #tipoCliente, carrega lista de clientes do tipo PF/PJ
-$(document).on('change', '#tipoCliente', function() {
+$(document).on('change', '#tipoCliente', function () {
     const tipoSelecionado = $(this).val();
 
     if (!tipoSelecionado) {
@@ -275,7 +275,7 @@ $(document).on('change', '#tipoCliente', function() {
         url: `/clientes/${tipoConvertido}`,
         method: 'GET',
         data: { escritorio_id: escritorioId },
-        success: function(response) {
+        success: function (response) {
             const clientes = response.data || [];
             const $clienteSelect = $('#clienteServico');
 
@@ -306,14 +306,14 @@ $(document).on('change', '#tipoCliente', function() {
                 shouldSort: false
             });
         },
-        error: function(xhr) {
+        error: function (xhr) {
             Swal.fire("Erro", xhr.responseJSON?.message || "Erro ao carregar clientes.", "error");
         }
     });
 });
 
 // (E) Eventos para anexos: no "change" do input e "click" no botão de remover
-$(document).on('change', '#arquivosServico', function(e) {
+$(document).on('change', '#arquivosServico', function (e) {
     const novosArquivos = Array.from(e.target.files);
     // Anexa no array
     arquivosSelecionados = [...arquivosSelecionados, ...novosArquivos];
@@ -373,7 +373,8 @@ $(document).on('change', '#checkboxAgendarConsulta', function () {
 });
 
 // (G) Quando a página carrega
-$(document).ready(function() {
+$(document).ready(function () {
+
     // Coloca data de hoje no campo #dataInicio
     const hoje = new Date();
     const ano = hoje.getFullYear();
@@ -398,7 +399,7 @@ $(document).ready(function() {
     $('#arquivosServico').closest('.form-group').after(htmlCheckbox);
 
     // Botão "Iniciar Serviço"
-    $('#btnIniciarServico').on('click', function(e) {
+    $('#btnIniciarServico').on('click', function (e) {
         e.preventDefault();
 
         // Valida campos obrigatórios
@@ -481,7 +482,7 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             data: formData,
-            success: function(resp) {
+            success: function (resp) {
                 // Fechar SweetAlert e abrir "Sucesso"
                 const mostrarSwalSucesso = () => {
                     Swal.fire('Sucesso', 'Serviço iniciado com sucesso!', 'success');
@@ -538,7 +539,7 @@ $(document).ready(function() {
                     }, tempoMinimo);
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 const mostrarErro = () => {
                     Swal.fire('Erro', xhr.responseJSON?.message || 'Erro ao iniciar serviço.', 'error');
                 };
@@ -559,3 +560,4 @@ $(document).ready(function() {
     // Logo de cara, atualiza lista (caso o array não esteja vazio)
     atualizarListaArquivos();
 });
+
