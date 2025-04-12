@@ -65,7 +65,7 @@ class ClienteController
     public function anexarDocumento(Request $request, $tipo, $id)
     {
         $request->validate([
-            'file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:100000',
             'nome_original' => 'required|string|max:255',
         ]);
 

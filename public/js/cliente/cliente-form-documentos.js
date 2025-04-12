@@ -18,7 +18,7 @@ $(document).on("click", ".btn-documentos", async function () {
         `,
         showCloseButton: true,
         showConfirmButton: false,
-        width: "700px",
+        width: "1200px",
         didOpen: () => {
             carregarDocumentos(clienteId, tipoCliente);
 
@@ -29,20 +29,27 @@ $(document).on("click", ".btn-documentos", async function () {
                 maxFilesize: 5, // MB
                 clickable: true,
                 dictDefaultMessage: "Arraste arquivos aqui ou clique para anexar",
-                autoProcessQueue: false, // Importante!
+                autoProcessQueue: false,
                 init: function () {
                     this.on("addedfile", file => {
                         Swal.fire({
-                            title: "Nomear arquivo",
+                            title: "Nomear Arquivo",
                             input: "text",
                             inputLabel: "Digite um nome amigável para o documento:",
                             inputValue: file.name.split('.').slice(0, -1).join('.'),
                             showCancelButton: true,
-                            confirmButtonText: "Salvar",
-                            cancelButtonText: "Cancelar",
+                            confirmButtonText: '<i class="fas fa-check"></i> Salvar',
+                            cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+                            reverseButtons: true,
+                            buttonsStyling: false,
+                            focusConfirm: false,
+                            customClass: {
+                                confirmButton: 'btn btn-primary ml-2',
+                                cancelButton: 'btn btn-secondary'
+                            },
                             preConfirm: (nomeDigitado) => {
                                 if (!nomeDigitado) {
-                                    Swal.showValidationMessage("Nome é obrigatório.");
+                                    Swal.showValidationMessage("O nome é obrigatório.");
                                     return false;
                                 }
                                 file.customName = nomeDigitado;
@@ -51,7 +58,36 @@ $(document).on("click", ".btn-documentos", async function () {
                             if (!result.isConfirmed) {
                                 this.removeFile(file);
                             } else {
+                                const tempoMinimo = 1500;
+                                const inicio = Date.now();
+
+                                Swal.fire({
+                                    title: "Enviando...",
+                                    text: "Aguarde enquanto o arquivo é salvo.",
+                                    allowOutsideClick: false,
+                                    didOpen: () => Swal.showLoading()
+                                });
+
                                 this.processFile(file);
+
+                                this.on("success", function () {
+                                    const tempo = Date.now() - inicio;
+                                    const atraso = tempoMinimo - tempo;
+
+                                    setTimeout(() => {
+                                        Swal.fire({
+                                            icon: "success",
+                                            title: "Sucesso!",
+                                            text: "Documento salvo com sucesso."
+                                        });
+                                        carregarDocumentos(clienteId, tipoCliente);
+                                    }, atraso > 0 ? atraso : 0);
+                                });
+
+                                this.on("error", function () {
+                                    Swal.close();
+                                    Swal.fire("❌ Erro", "Erro ao anexar documento. Verifique o arquivo e tente novamente.", "error");
+                                });
                             }
                         });
                     });
@@ -59,17 +95,9 @@ $(document).on("click", ".btn-documentos", async function () {
                     this.on("sending", function (file, xhr, formData) {
                         formData.append("nome_original", file.customName || file.name);
                     });
-
-                    this.on("success", function (file, response) {
-                        Swal.fire("✅ Sucesso", "Documento salvo com sucesso!", "success");
-                        carregarDocumentos(clienteId, tipoCliente);
-                    });
-
-                    this.on("error", function (file, response) {
-                        Swal.fire("❌ Erro", "Erro ao anexar documento. Verifique o arquivo e tente novamente.", "error");
-                    });
                 }
             });
+
         }
     });
 
@@ -96,17 +124,17 @@ $(document).on("click", ".btn-documentos", async function () {
                                 <i class="fas fa-file-alt text-secondary me-2"></i> ${doc.nome_original}
                             </div>
                             <div>
-                                <a href="${doc.url}" target="_blank" class="btn btn-sm btn-outline-info me-1">
+                                <a href="${doc.url}" target="_blank" class="btn btn-sm btn-primary me-1">
                                     <i class="fas fa-eye"></i> Visualizar
                                 </a>
-                                <button class="btn btn-sm btn-outline-warning btn-editar-documento me-1"
-                                        data-id="${doc.id}" 
-                                        data-tipo="${tipoCliente}" 
+                                <button class="btn btn-sm btn-success btn-editar-documento me-1"
+                                        data-id="${doc.id}"
+                                        data-tipo="${tipoCliente}"
                                         data-nome="${doc.nome_original}">
                                     <i class="fas fa-edit"></i> Editar
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger btn-deletar-documento"
-                                        data-id="${doc.id}" 
+                                <button class="btn btn-sm btn-danger btn-deletar-documento"
+                                        data-id="${doc.id}"
                                         data-tipo="${tipoCliente}">
                                     <i class="fas fa-trash"></i> Deletar
                                 </button>
@@ -127,14 +155,24 @@ $(document).on("click", ".btn-editar-documento", function () {
     const tipoCliente = $(this).data("tipo");
     const nomeAtual = $(this).data("nome");
 
+    // Captura clienteId para reabrir depois
+    const $botaoDoc = $(`.btn-documentos[data-tipo="${tipoCliente}"]`).first();
+    const clienteId = $botaoDoc.data("id");
+
     Swal.fire({
         title: "Editar Nome do Documento",
         input: "text",
         inputLabel: "Digite o novo nome:",
-        inputValue: nomeAtual || "",  // Aqui garante o valor atual no input
+        inputValue: nomeAtual || "",
         showCancelButton: true,
-        confirmButtonText: "Salvar",
-        cancelButtonText: "Cancelar",
+        confirmButtonText: '<i class="fas fa-check"></i> Atualizar',
+        cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+        buttonsStyling: false,
+        reverseButtons: true,
+        customClass: {
+            confirmButton: 'btn btn-success ml-2',
+            cancelButton: 'btn btn-secondary'
+        },
         preConfirm: (novoNome) => {
             if (!novoNome) {
                 Swal.showValidationMessage("O nome é obrigatório!");
@@ -143,16 +181,39 @@ $(document).on("click", ".btn-editar-documento", function () {
         }
     }).then(result => {
         if (result.isConfirmed) {
+            const tempoMinimo = 1500;
+            const inicio = Date.now();
+
+            Swal.fire({
+                title: "Atualizando...",
+                text: "Aguarde enquanto os dados são salvos...",
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => Swal.showLoading()
+            });
+
             $.ajax({
-                url: `/clientes/${tipoCliente}/documentos/${docId}`,
+                url: `/documentos/${tipoCliente}/${docId}`,
                 method: "PUT",
                 headers: { "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content") },
                 data: { nome_original: result.value },
                 success: () => {
-                    Swal.fire("✅ Sucesso", "Nome do documento atualizado!", "success");
-                    $(`.btn-documentos[data-id="${docId}"][data-tipo="${tipoCliente}"]`).click();
+                    const tempo = Date.now() - inicio;
+                    const atraso = tempoMinimo - tempo;
+
+                    setTimeout(() => {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Sucesso!",
+                            text: "Nome do documento atualizado com sucesso."
+                        }).then(() => {
+                            $(`.btn-documentos[data-id="${clienteId}"][data-tipo="${tipoCliente}"]`).click();
+                        });
+
+                    }, atraso > 0 ? atraso : 0);
                 },
                 error: () => {
+                    Swal.close();
                     Swal.fire("❌ Erro", "Falha ao atualizar o nome.", "error");
                 }
             });
@@ -160,9 +221,11 @@ $(document).on("click", ".btn-editar-documento", function () {
     });
 });
 
+
 // Deletar documento
 $(document).on("click", ".btn-deletar-documento", function () {
     const docId = $(this).data("id");
+    const clienteId = $(this).data("cliente");
     const tipoCliente = $(this).data("tipo");
 
     Swal.fire({
@@ -170,19 +233,43 @@ $(document).on("click", ".btn-deletar-documento", function () {
         text: "Esta ação é irreversível e apagará permanentemente o documento!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#6c757d",
         confirmButtonText: '<i class="fas fa-trash"></i> Deletar',
-        cancelButtonText: '<i class="fas fa-times"></i> Cancelar'
+        cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+        reverseButtons: true,
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'btn btn-danger ml-2',
+            cancelButton: 'btn btn-secondary'
+        }
     }).then(result => {
         if (result.isConfirmed) {
+            const tempoMinimo = 1500;
+            const inicio = Date.now();
+
+            Swal.fire({
+                title: "Excluindo...",
+                text: "Aguarde enquanto o documento é excluído.",
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
             $.ajax({
-                url: `/clientes/${tipoCliente}/documentos/${docId}`,
+                url: `/documentos/${tipoCliente}/${docId}`,
                 method: "DELETE",
                 headers: { "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content") },
                 success: () => {
-                    Swal.fire("✅ Sucesso", "Documento excluído com sucesso!", "success");
-                    $(`.btn-documentos[data-id="${docId}"][data-tipo="${tipoCliente}"]`).click();
+                    const tempo = Date.now() - inicio;
+                    const atraso = tempoMinimo - tempo;
+
+                    setTimeout(() => {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Sucesso!",
+                            text: "Documento excluído com sucesso.",
+                        }).then(() => {
+                            $(`.btn-documentos[data-id="${clienteId}"][data-tipo="${tipoCliente}"]`).trigger("click");
+                        });
+                    }, atraso > 0 ? atraso : 0);
                 },
                 error: () => {
                     Swal.fire("❌ Erro", "Falha ao excluir documento.", "error");

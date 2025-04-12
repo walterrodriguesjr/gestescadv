@@ -36,11 +36,15 @@ $(document).ready(function () {
                     data: "celular",
                     render: function (data) {
                         if (data) {
-                            const celularFormatado = data.replace(/\D/g, "");
+                            const celularNumerico = data.replace(/\D/g, ""); // Limpa qualquer formatação antiga
+
+                            // Aplica a máscara no formato (11) 98888-7777
+                            const celularFormatado = celularNumerico.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+
                             return `
-                                <a href="https://wa.me/55${celularFormatado}" target="_blank"
-                                    class="d-flex align-items-center text-success text-decoration-none">
-                                    <i class="fab fa-whatsapp fa-lg mr-1"></i> ${data}
+                                <a href="https://wa.me/55${celularNumerico}" target="_blank"
+                                   class="d-flex align-items-center text-success text-decoration-none">
+                                    <i class="fab fa-whatsapp fa-lg me-1"></i> ${celularFormatado}
                                 </a>`;
                         }
                         return "-";
@@ -53,7 +57,7 @@ $(document).ready(function () {
                     searchable: false,
                     render: function (data, type, row) {
                         return `
-                            <button class="btn btn-sm btn-info btn-documentos"
+                            <button class="btn btn-sm btn-secondary btn-documentos"
                                 data-id="${row.id}"
                                 data-tipo="${row.tipo_cliente}">
                                 <i class="fas fa-folder-open"></i> Documentos
@@ -97,10 +101,15 @@ $(document).ready(function () {
                     data: "celular",
                     render: function (data) {
                         if (!data) return "Não informado";
-                        let numeroFormatado = data.replace(/\D/g, "");
+
+                        const numeroLimpo = data.replace(/\D/g, "");
+
+                        // Aplica máscara: (11) 98888-7777
+                        const numeroFormatado = numeroLimpo.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+
                         return `
-                            <a href="https://wa.me/55${numeroFormatado}" target="_blank" class="text-success text-decoration-none">
-                                <i class="fab fa-whatsapp fa-lg"></i> ${data}
+                            <a href="https://wa.me/55${numeroLimpo}" target="_blank" class="text-success text-decoration-none">
+                                <i class="fab fa-whatsapp fa-lg me-1"></i> ${numeroFormatado}
                             </a>`;
                     }
                 },
@@ -111,7 +120,7 @@ $(document).ready(function () {
                     searchable: false,
                     render: function (data, type, row) {
                         return `
-                            <button class="btn btn-sm btn-info btn-documentos"
+                            <button class="btn btn-sm btn-secondary btn-documentos"
                                 data-id="${row.id}"
                                 data-tipo="${row.tipo_cliente}">
                                 <i class="fas fa-folder-open"></i> Documentos
