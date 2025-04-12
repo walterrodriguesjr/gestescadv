@@ -31,22 +31,23 @@ $('#tabelaTipoServicos').on('click', '.editar-servico', function () {
                     confirmButtonText: '<i class="fas fa-check"></i> Atualizar',
                     cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
                     buttonsStyling: false,
-                    reverseButtons: true, // <-- isso inverte a ordem
+                    reverseButtons: true,
                     customClass: {
-                        confirmButton: 'btn btn-success ml-2',
-                        cancelButton: 'btn btn-secondary'
+                        confirmButton: 'btn btn-success ms-2',
+                        cancelButton: 'btn btn-secondary me-2'
                     },
                     focusConfirm: false,
                     preConfirm: () => {
                         const novoNome = $('#inputNovoNome').val().trim();
                         if (!novoNome) {
                             Swal.showValidationMessage('O nome não pode estar vazio.');
+                            return false;
                         }
                         return novoNome;
                     }
-                }).then(result => {
+                }).then(async result => {
                     if (result.isConfirmed && result.value) {
-                        atualizarTipoServico(id, result.value);
+                        await atualizarTipoServico(id, result.value);
                     }
                 });
 
@@ -60,31 +61,49 @@ $('#tabelaTipoServicos').on('click', '.editar-servico', function () {
     });
 });
 
-// Função AJAX para PUT (atualizar)
-function atualizarTipoServico(id, novoNome) {
+// Função AJAX para PUT (atualizar) com tempo mínimo de loader
+async function atualizarTipoServico(id, novoNome) {
+    const tempoMinimo = 1500;
+    const inicio = Date.now();
+
     Swal.fire({
         title: 'Atualizando...',
+        text: 'Aguarde enquanto o tipo de serviço é atualizado.',
         allowOutsideClick: false,
+        showConfirmButton: false,
+        timerProgressBar: true,
         didOpen: () => Swal.showLoading()
     });
 
-    $.ajax({
-        url: `/atualizar_tipo_servico/${id}`,
-        method: 'PUT',
-        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-        data: { nome_servico: novoNome },
-        success: function (resp) {
+    try {
+        const resp = await $.ajax({
+            url: `/atualizar_tipo_servico/${id}`,
+            method: 'PUT',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            data: { nome_servico: novoNome }
+        });
+
+        const tempoDecorrido = Date.now() - inicio;
+        const atraso = tempoMinimo - tempoDecorrido;
+
+        setTimeout(() => {
             Swal.fire('Sucesso!', resp.message || 'Serviço atualizado com sucesso.', 'success');
             $('#tabelaTipoServicos').DataTable().ajax.reload();
-        },
-        error: function (xhr) {
-            let msg = 'Erro ao atualizar.';
-            if (xhr.status === 422 && xhr.responseJSON.errors) {
-                msg = Object.values(xhr.responseJSON.errors).join("<br>");
-            } else if (xhr.responseJSON?.message) {
-                msg = xhr.responseJSON.message;
-            }
-            Swal.fire('Erro!', msg, 'error');
+        }, atraso > 0 ? atraso : 0);
+
+    } catch (xhr) {
+        const tempoDecorrido = Date.now() - inicio;
+        const atraso = tempoMinimo - tempoDecorrido;
+
+        let msg = 'Erro ao atualizar.';
+        if (xhr.status === 422 && xhr.responseJSON?.errors) {
+            msg = Object.values(xhr.responseJSON.errors).join("<br>");
+        } else if (xhr.responseJSON?.message) {
+            msg = xhr.responseJSON.message;
         }
-    });
+
+        setTimeout(() => {
+            Swal.fire('Erro!', msg, 'error');
+        }, atraso > 0 ? atraso : 0);
+    }
 }

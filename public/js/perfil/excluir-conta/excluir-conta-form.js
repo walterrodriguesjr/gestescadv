@@ -68,12 +68,15 @@ $(document).ready(function () {
             `,
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: "<i class='fas fa-trash'></i> Confirmar Exclusão",
             cancelButtonText: "<i class='fas fa-times'></i> Cancelar",
+            confirmButtonText: "<i class='fas fa-trash'></i> Confirmar Exclusão",
+            reverseButtons: true,
             customClass: {
-                confirmButton: "btn btn-danger",
-                cancelButton: "btn btn-secondary"
+                actions: 'd-flex justify-content-center gap-3 mt-3',
+                cancelButton: "btn btn-secondary",
+                confirmButton: "btn btn-danger"
             },
+            buttonsStyling: false,
             preConfirm: () => {
                 let inputCodigo = Swal.getPopup().querySelector("#codigoConfirmacaoModal");
 

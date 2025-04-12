@@ -4,11 +4,14 @@ function reativarMembro(membroId) {
         text: "O membro será reativado e poderá acessar o escritório novamente.",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonText: "Sim, reativar",
-        cancelButtonText: "Cancelar",
+        confirmButtonText: "<i class='fas fa-check'></i> Sim, reativar",
+        cancelButtonText: "<i class='fas fa-times'></i> Cancelar",
+        buttonsStyling: false,
         reverseButtons: true,
-        confirmButtonColor: "#28a745", // Verde
-        cancelButtonColor: "#6c757d"
+        customClass: {
+            confirmButton: "btn btn-primary ms-2",
+            cancelButton: "btn btn-secondary me-2"
+        }
     }).then((result) => {
         if (result.isConfirmed) {
             let requestStartTime = new Date().getTime();
@@ -41,7 +44,7 @@ function reativarMembro(membroId) {
                 url: `/membro-escritorio/${membroId}/reativar`,
                 type: "POST",
                 headers: { "X-CSRF-TOKEN": csrfToken },
-                success: function(response) {
+                success: function (response) {
                     clearTimeout(timeout); // Cancela o timeout se a resposta chegou
                     if (timeoutReached) return; // Se já chegou no timeout, não faz nada
 
@@ -60,7 +63,7 @@ function reativarMembro(membroId) {
                         $('#membrosEscritorioTable').DataTable().ajax.reload(null, false);
                     }, Math.max(minWaitTime - elapsedTime, 0)); // Garante tempo mínimo do spinner
                 },
-                error: function(xhr) {
+                error: function (xhr) {
                     clearTimeout(timeout);
                     if (timeoutReached) return;
 

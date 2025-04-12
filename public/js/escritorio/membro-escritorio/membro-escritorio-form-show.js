@@ -57,21 +57,21 @@ $(document).ready(function () {
                 render: function (data, type, row) {
                     // Botão VISUALIZAR (passando TODOS os dados)
                     const btnVisualizar = `
-                        <button class="btn btn-primary btn-sm" 
+                        <button class="btn btn-primary btn-sm"
                             onclick="visualizarMembro(
-                                ${data}, 
-                                '${row.nome}', 
-                                '${row.email}', 
-                                '${row.nivel_acesso}', 
+                                ${data},
+                                '${row.nome}',
+                                '${row.email}',
+                                '${row.nivel_acesso}',
                                 '${row.status}',
-                                '${row.cpf}', 
-                                '${row.telefone}', 
-                                '${row.celular}', 
-                                '${row.cidade}', 
-                                '${row.estado}', 
-                                '${row.oab}', 
-                                '${row.estado_oab}', 
-                                '${row.data_nascimento}', 
+                                '${row.cpf}',
+                                '${row.telefone}',
+                                '${row.celular}',
+                                '${row.cidade}',
+                                '${row.estado}',
+                                '${row.oab}',
+                                '${row.estado_oab}',
+                                '${row.data_nascimento}',
                                 '${row.foto}'
                             )">
                             <i class="fas fa-eye"></i> Visualizar
@@ -82,12 +82,12 @@ $(document).ready(function () {
                     let btnEditar = "";
                     if (row.status === "ativo" || row.status === "pendente" || row.token_expirado) {
                         btnEditar = `
-                            <button class="btn btn-warning btn-sm" 
+                            <button class="btn btn-success btn-sm"
                                 onclick="abrirEdicaoMembro(
-                                    ${data}, 
-                                    '${row.nome}', 
-                                    '${row.email}', 
-                                    '${row.nivel_acesso}', 
+                                    ${data},
+                                    '${row.nome}',
+                                    '${row.email}',
+                                    '${row.nivel_acesso}',
                                     '${row.cpf}'
                                 )">
                                 <i class="fas fa-edit"></i> Editar
@@ -137,11 +137,11 @@ $(document).ready(function () {
 
                     // Retorna todos os botões necessários na mesma célula
                     return `
-                        ${btnVisualizar} 
-                        ${btnEditar} 
-                        ${btnReativar} 
-                        ${btnSuspender} 
-                        ${btnReenviarConvite} 
+                        ${btnVisualizar}
+                        ${btnEditar}
+                        ${btnReativar}
+                        ${btnSuspender}
+                        ${btnReenviarConvite}
                         ${btnDeletar}
                     `;
                 }
@@ -157,8 +157,8 @@ $(document).ready(function () {
  * Função para exibir os detalhes do membro em um Swal
  */
 function visualizarMembro(
-    membroId, 
-    nome, email, nivelAcesso, status, cpf, telefone, celular, cidade, 
+    membroId,
+    nome, email, nivelAcesso, status, cpf, telefone, celular, cidade,
     estado, oab, estadoOab, dataNascimento, foto
 ) {
     // Formata data no formato DD-MM-YYYY
@@ -176,46 +176,20 @@ function visualizarMembro(
         icon: 'info',
         title: 'Dados do Membro',
         html: `
-            <div class="container text-left" style="max-width: 850px;">
-                <div class="row">
-                    <div class="col-md-12 text-center">
-                        ${fotoHtml}
-                    </div>
+                <div class="container text-center" style="max-width: 600px;">
+                    <p><strong>Nome:</strong> ${nome}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>CPF:</strong> ${cpf ? cpf : 'Não informado'}</p>
                 </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Nome:</strong> ${nome}</p>
-                        <p><strong>Email:</strong> ${email}</p>
-                        <p><strong>Nível de Acesso:</strong> ${nivelAcesso}</p>
-                        <p><strong>Status:</strong> ${status}</p>
-                    </div>
-
-                    <div class="col-md-6">
-                        <p><strong>CPF:</strong> ${cpf ? cpf : 'Não informado'}</p>
-                        <p><strong>Telefone:</strong> ${telefone ? telefone : 'Não informado'}</p>
-                        <p><strong>Celular:</strong> ${celular ? celular : 'Não informado'}</p>
-                        <p><strong>Data de Nascimento:</strong> ${formatarData(dataNascimento)}</p>
-                    </div>
-                </div>
-
-                <hr>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Cidade:</strong> ${cidade ? cidade : 'Não informado'}</p>
-                        <p><strong>Estado:</strong> ${estado ? estado : 'Não informado'}</p>
-                    </div>
-
-                    <div class="col-md-6">
-                        <p><strong>OAB:</strong> ${oab ? oab : 'Não informado'}</p>
-                        <p><strong>Estado OAB:</strong> ${estadoOab ? estadoOab : 'Não informado'}</p>
-                    </div>
-                </div>
-            </div>
-        `,
-        width: 900,
-        confirmButtonText: 'Fechar'
+            `,
+        width: 600,
+        showCancelButton: false,
+        showConfirmButton: true,
+        confirmButtonText: "<i class='fas fa-times'></i> Fechar",
+        customClass: {
+            confirmButton: "btn btn-secondary"
+        },
+        buttonsStyling: false
     });
 }
 
@@ -228,8 +202,14 @@ function reenviarConvite(membroId) {
         text: "Deseja realmente reenviar o convite para este membro?",
         icon: "question",
         showCancelButton: true,
-        confirmButtonText: "Sim, reenviar",
-        cancelButtonText: "Cancelar"
+        confirmButtonText: "<i class='fas fa-envelope'></i> Sim, reenviar",
+        cancelButtonText: "<i class='fas fa-times'></i> Cancelar",
+        buttonsStyling: false,
+        reverseButtons: true,
+        customClass: {
+            confirmButton: "btn btn-primary ms-2",
+            cancelButton: "btn btn-secondary me-2"
+        }
     }).then((result) => {
         if (result.isConfirmed) {
 

@@ -49,10 +49,17 @@ $(document).ready(function () {
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "<i class='fas fa-check'></i> Sim",
-            cancelButtonText: "<i class='fas fa-times'></i> Cancelar"
+            cancelButtonText: "<i class='fas fa-times'></i> Cancelar",
+            reverseButtons: true,
+            customClass: {
+                actions: 'd-flex justify-content-center gap-3 mt-3', // centraliza e espaça os botões
+                confirmButton: 'btn btn-primary px-4',
+                cancelButton: 'btn btn-secondary px-4'
+            },
+            buttonsStyling: false
         }).then((result) => {
             if (result.isConfirmed) {
-                let loadingSwal = Swal.fire({
+                Swal.fire({
                     title: "Encerrando sessão...",
                     text: "Aguarde...",
                     allowOutsideClick: false,
@@ -63,16 +70,15 @@ $(document).ready(function () {
                     }
                 });
 
-                let requestStartTime = new Date().getTime();
+                const requestStartTime = Date.now();
 
                 $.ajax({
                     url: `/sessoes-ativas/logout/${sessaoId}`,
                     type: "POST",
                     headers: { "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content") },
                     success: function (response) {
-                        let requestEndTime = new Date().getTime();
-                        let elapsedTime = requestEndTime - requestStartTime;
-                        let minWaitTime = 1000;
+                        const elapsedTime = Date.now() - requestStartTime;
+                        const minWaitTime = 1000;
 
                         setTimeout(() => {
                             Swal.close();
@@ -81,7 +87,11 @@ $(document).ready(function () {
                                 icon: "success",
                                 title: "Sessão encerrada!",
                                 text: response.message,
-                                confirmButtonText: "<i class='fas fa-check'></i> OK"
+                                confirmButtonText: "<i class='fas fa-check'></i> OK",
+                                customClass: {
+                                    confirmButton: 'btn btn-success'
+                                },
+                                buttonsStyling: false
                             });
 
                             if (response.logout) {
@@ -94,8 +104,7 @@ $(document).ready(function () {
                         }, Math.max(minWaitTime - elapsedTime, 0));
                     },
                     error: function () {
-                        let requestEndTime = new Date().getTime();
-                        let elapsedTime = requestEndTime - requestStartTime;
+                        const elapsedTime = Date.now() - requestStartTime;
 
                         setTimeout(() => {
                             Swal.close();
@@ -104,14 +113,19 @@ $(document).ready(function () {
                                 icon: "error",
                                 title: "Erro",
                                 text: "Erro ao encerrar sessão.",
-                                confirmButtonText: "<i class='fas fa-check'></i> OK"
+                                confirmButtonText: "<i class='fas fa-check'></i> OK",
+                                customClass: {
+                                    confirmButton: 'btn btn-danger'
+                                },
+                                buttonsStyling: false
                             });
-                        }, Math.max(minWaitTime - elapsedTime, 0));
+                        }, Math.max(1000 - elapsedTime, 0));
                     }
                 });
             }
         });
     });
+
 
     // Encerrar todas as sessões com confirmação
     $("#encerrarTodasSessoes").click(function () {
@@ -121,7 +135,14 @@ $(document).ready(function () {
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "<i class='fas fa-check'></i> Sim",
-            cancelButtonText: "<i class='fas fa-times'></i> Cancelar"
+            cancelButtonText: "<i class='fas fa-times'></i> Cancelar",
+            reverseButtons: true,
+            customClass: {
+                actions: 'd-flex justify-content-center gap-3 mt-3',
+                confirmButton: 'btn btn-primary px-4',
+                cancelButton: 'btn btn-secondary px-4'
+            },
+            buttonsStyling: false
         }).then((result) => {
             if (result.isConfirmed) {
                 let loadingSwal = Swal.fire({

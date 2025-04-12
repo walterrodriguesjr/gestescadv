@@ -4,11 +4,14 @@ function suspenderMembro(membroId) {
         text: "O membro será suspenso e não poderá mais acessar o escritório!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonText: "Sim, suspender",
-        cancelButtonText: "Cancelar",
+        confirmButtonText: "<i class='fas fa-user-slash'></i> Sim, suspender",
+        cancelButtonText: "<i class='fas fa-times'></i> Cancelar",
+        buttonsStyling: false,
         reverseButtons: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#6c757d"
+        customClass: {
+            confirmButton: "btn btn-danger ms-2",
+            cancelButton: "btn btn-secondary me-2"
+        }
     }).then((result) => {
         if (result.isConfirmed) {
             let requestStartTime = new Date().getTime();
@@ -41,7 +44,7 @@ function suspenderMembro(membroId) {
                 url: `/membro-escritorio/${membroId}/suspender`,
                 type: "POST",
                 headers: { "X-CSRF-TOKEN": csrfToken },
-                success: function(response) {
+                success: function (response) {
                     clearTimeout(timeout); // Cancela o timeout se a resposta chegou
                     if (timeoutReached) return; // Se já chegou no timeout, não faz nada
 
@@ -60,7 +63,7 @@ function suspenderMembro(membroId) {
                         $('#membrosEscritorioTable').DataTable().ajax.reload(null, false);
                     }, Math.max(minWaitTime - elapsedTime, 0)); // Garante tempo mínimo do spinner
                 },
-                error: function(xhr) {
+                error: function (xhr) {
                     clearTimeout(timeout);
                     if (timeoutReached) return;
 

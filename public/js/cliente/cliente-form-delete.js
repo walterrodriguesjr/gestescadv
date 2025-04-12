@@ -9,25 +9,23 @@ $(document).on("click", ".btn-deletar", function () {
     const tipoCliente = $(this).data("tipo");
     const csrfToken = $('meta[name="csrf-token"]').attr("content");
 
-    // 1) Primeiro Swal de Confirmação
     Swal.fire({
         title: "Tem certeza que deseja deletar este cliente?",
         text: "⚠️ Todos os dados vinculados a este cliente serão apagados permanentemente!",
         icon: "warning",
         showCancelButton: true,
-        // Botão principal => vermelho com ícone de lixeira, no lado direito
-        confirmButtonColor: "#d33",
-        // Botão secundário => cinza, lado esquerdo
-        cancelButtonColor: "#6c757d",
+        reverseButtons: true,
         confirmButtonText: '<i class="fas fa-trash"></i> Sim, deletar',
         cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
-        reverseButtons: true // inverte => cancel à esquerda, confirmar à direita
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: "btn btn-danger ms-2",
+            cancelButton: "btn btn-secondary me-2"
+        }
     }).then((result) => {
         if (result.isConfirmed) {
-            // 2) Gerar Token de Segurança (6 dígitos)
             const token = Math.floor(100000 + Math.random() * 900000).toString();
 
-            // 3) Segundo Swal => inserir o Token
             Swal.fire({
                 title: "⚠️ Exclusão Irreversível!",
                 html: `
@@ -38,13 +36,14 @@ $(document).on("click", ".btn-deletar", function () {
                 input: "text",
                 inputPlaceholder: "Digite o código aqui",
                 showCancelButton: true,
-                // Botão principal => vermelho
-                confirmButtonColor: "#d33",
-                // Botão secundário => cinza
-                cancelButtonColor: "#6c757d",
+                reverseButtons: true,
                 confirmButtonText: '<i class="fas fa-trash"></i> Deletar',
                 cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
-                reverseButtons: true,
+                buttonsStyling: false,
+                customClass: {
+                    confirmButton: "btn btn-danger ms-2",
+                    cancelButton: "btn btn-secondary me-2"
+                },
                 preConfirm: (valorDigitado) => {
                     if (valorDigitado !== token) {
                         Swal.showValidationMessage("❌ Código incorreto. Tente novamente.");
@@ -53,35 +52,65 @@ $(document).on("click", ".btn-deletar", function () {
                 }
             }).then((confirmacao) => {
                 if (confirmacao.isConfirmed) {
-                    // 4) Swal de loading
+                    let podeFechar = false;
+                    const tempoMinimo = 1500;
+                    const tempoMaximo = 10000;
+
                     Swal.fire({
                         title: "Deletando...",
                         text: "Aguarde enquanto processamos a exclusão.",
                         allowOutsideClick: false,
-                        didOpen: () => Swal.showLoading()
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                            setTimeout(() => { podeFechar = true; }, tempoMinimo);
+                            setTimeout(() => { if (Swal.isVisible()) Swal.close(); }, tempoMaximo);
+                        }
                     });
 
-                    // 5) Requisição AJAX para deletar
                     $.ajax({
                         url: `/clientes/${clienteId}`,
                         type: "DELETE",
                         headers: { "X-CSRF-TOKEN": csrfToken },
                         success: function (response) {
-                            Swal.fire({
-                                icon: "success",
-                                title: "Cliente deletado!",
-                                text: response.message || "O cliente foi removido com sucesso."
-                            });
+                            const sucesso = () => {
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Cliente deletado!",
+                                    text: response.message || "O cliente foi removido com sucesso."
+                                });
+                                $("#tabelaClientes").DataTable().ajax.reload();
+                            };
 
-                            // Recarrega a tabela após exclusão
-                            $("#tabelaClientes").DataTable().ajax.reload();
+                            if (podeFechar) {
+                                Swal.close();
+                                sucesso();
+                            } else {
+                                setTimeout(() => {
+                                    Swal.close();
+                                    sucesso();
+                                }, tempoMinimo);
+                            }
                         },
                         error: function () {
-                            Swal.fire({
-                                icon: "error",
-                                title: "Erro!",
-                                text: "Não foi possível deletar o cliente. Tente novamente."
-                            });
+                            const erro = () => {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Erro!",
+                                    text: "Não foi possível deletar o cliente. Tente novamente."
+                                });
+                            };
+
+                            if (podeFechar) {
+                                Swal.close();
+                                erro();
+                            } else {
+                                setTimeout(() => {
+                                    Swal.close();
+                                    erro();
+                                }, tempoMinimo);
+                            }
                         }
                     });
                 }

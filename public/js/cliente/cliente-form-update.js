@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // (A) EVENTO: BOTÃO .btn-editar => Abre o Swal principal
 ////////////////////////////////////////////////////////////////////////////////
-$(document).on("click", ".btn-editar", async function() {
+$(document).on("click", ".btn-editar", async function () {
     const id = $(this).data("id");
     const tipo = $(this).data("tipo");
 
@@ -59,7 +59,7 @@ $(document).on("click", ".btn-editar", async function() {
         }
 
         // 10) Botão “Salvar”
-        $("#atualizarEdicaoCliente").on("click", function() {
+        $("#atualizarEdicaoCliente").on("click", function () {
             if (!$("#formEditarCliente").valid()) {
                 // Form inválido => exibe erros e não fecha
                 return;
@@ -68,7 +68,7 @@ $(document).on("click", ".btn-editar", async function() {
         });
 
         // 11) Botão “Fechar” => fecha sem salvar
-        $("#fecharEdicaoCliente").on("click", function() {
+        $("#fecharEdicaoCliente").on("click", function () {
             Swal.close();
         });
 
@@ -82,115 +82,134 @@ $(document).on("click", ".btn-editar", async function() {
 // (B) GERA O FORMULÁRIO (PF ou PJ) COM MENSAGENS INLINE DE CEP/CNPJ
 ////////////////////////////////////////////////////////////////////////////////
 function gerarFormularioEdicao(tipo, cliente) {
-
-    // Helper para criar <input>
     function inputField(label, name, value = "", required = true) {
+        const placeholder = `Digite ${label.toLowerCase()}...`;
         return `
             <div class="col-md-6 mb-3">
-                <label>${label}</label>
-                <input type="text" class="form-control" name="${name}" 
-                       value="${value}" ${required ? "required" : ""}>
+                <label for="${name}">${label}${required ? ' *' : ''}</label>
+                <input type="text" class="form-control" name="${name}" id="${name}"
+                    value="${value || ''}"
+                    placeholder="${placeholder}"
+                    ${required ? "required" : ""}>
             </div>
         `;
     }
+
+    const avisoObrigatorio = `
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div id="avisoCamposObrigatorios" class="alert alert-info mb-0 p-2 me-2">
+                <i class="fas fa-info-circle"></i> Os campos marcados com <strong>*</strong> são obrigatórios.
+            </div>
+            <div>
+                <button type="button" class="btn btn-secondary me-2" id="fecharEdicaoCliente">
+                    <i class="fas fa-times"></i> Fechar
+                </button>
+                <button type="button" class="btn btn-success" id="atualizarEdicaoCliente">
+                    <i class="fas fa-save"></i> Atualizar
+                </button>
+            </div>
+        </div>
+    `;
 
     if (tipo === "pessoa_fisica") {
         return `
         <form id="formEditarCliente">
-          <input type="hidden" name="id" value="${cliente.id}">
-          <input type="hidden" name="tipo_cliente" value="pessoa_fisica">
+            <input type="hidden" name="id" value="${cliente.id}">
+            <input type="hidden" name="tipo_cliente" value="pessoa_fisica">
 
-          <div class="row">
-            ${inputField("Nome", "nome", cliente.nome)}
-            ${inputField("CPF", "cpf", cliente.cpf)}
-            ${inputField("E-mail", "email", cliente.email)}
-            ${inputField("Celular", "celular", cliente.celular, true)}
-            ${inputField("Telefone", "telefone", cliente.telefone || "", false)}
+            <div class="row">
+                ${inputField("Nome", "nome", cliente.nome)}
+                ${inputField("CPF", "cpf", cliente.cpf)}
+                ${inputField("E-mail", "email", cliente.email || "", false)}
+                ${inputField("Celular", "celular", cliente.celular, true)}
+                ${inputField("Telefone", "telefone", cliente.telefone || "", false)}
+                ${inputField("CEP", "cep", cliente.cep || "", false)}
+                <small id="cepStatusPF" class="col-12 mb-2"></small>
+                ${inputField("Logradouro", "logradouro", cliente.logradouro || "", false)}
+                ${inputField("Número", "numero", cliente.numero || "", false)}
+                ${inputField("Bairro", "bairro", cliente.bairro || "", false)}
 
-            ${inputField("CEP", "cep", cliente.cep || "")}
-            <!-- CEP status inline (PF) -->
-            <small id="cepStatusPF" class="col-12 mb-2"></small>
-
-            ${inputField("Logradouro", "logradouro", cliente.logradouro || "")}
-            ${inputField("Número", "numero", cliente.numero || "", false)}
-            ${inputField("Bairro", "bairro", cliente.bairro || "", false)}
-
-            <div class="col-md-6 mb-3">
-                <label>Estado</label>
-                <select id="estadoSelectPF" class="form-control" name="estado" required>
-                    <option value="">Selecione o estado</option>
-                </select>
+                <div class="col-md-6 mb-3">
+                    <label>Estado</label>
+                    <select id="estadoSelectPF" class="form-control" name="estado" required>
+                        <option value="">Selecione o estado</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>Cidade</label>
+                    <select id="cidadeSelectPF" class="form-control" name="cidade" required>
+                        <option value="">Selecione a cidade</option>
+                    </select>
+                </div>
             </div>
-            <div class="col-md-6 mb-3">
-                <label>Cidade</label>
-                <select id="cidadeSelectPF" class="form-control" name="cidade" required>
-                    <option value="">Selecione a cidade</option>
-                </select>
-            </div>
-          </div>
 
-          <div class="text-end mt-3">
-            <button type="button" class="btn btn-secondary" id="fecharEdicaoCliente">
-              <i class="fas fa-times"></i> Fechar
-            </button>
-            <button type="button" class="btn btn-success" id="atualizarEdicaoCliente">
-              <i class="fas fa-save"></i> Atualizar
-            </button>
-          </div>
+            ${avisoObrigatorio}
         </form>
         `;
     } else {
-        // pessoa_juridica
         return `
         <form id="formEditarCliente">
-          <input type="hidden" name="id" value="${cliente.id}">
-          <input type="hidden" name="tipo_cliente" value="pessoa_juridica">
+            <input type="hidden" name="id" value="${cliente.id}">
+            <input type="hidden" name="tipo_cliente" value="pessoa_juridica">
 
-          <div class="row">
-            ${inputField("Razão Social", "razao_social", cliente.razao_social)}
-            ${inputField("Nome Fantasia", "nome_fantasia", cliente.nome_fantasia || "", false)}
-            
-            ${inputField("CNPJ", "cnpj", cliente.cnpj)}
-            <small id="cnpjStatusPJ" class="col-12 mb-2"></small> <!-- Mensagem do CNPJ logo abaixo do input -->
-            
-            ${inputField("E-mail", "email", cliente.email)}
-            ${inputField("Telefone", "telefone", cliente.telefone || "", false)}
-            ${inputField("Celular", "celular", cliente.celular || "", true)}
+            <div class="row">
+                ${inputField("Razão Social", "razao_social", cliente.razao_social)}
+                ${inputField("Nome Fantasia", "nome_fantasia", cliente.nome_fantasia || "", false)}
 
-            ${inputField("CEP", "cep", cliente.cep || "")}
-            <!-- CEP status inline (PJ) -->
-            <small id="cepStatusPJ" class="col-12 mb-2"></small>
+                <div class="col-md-6 mb-3">
+                    <label for="cnpj">CNPJ *</label>
+                    <input type="text" class="form-control" name="cnpj" id="cnpj"
+                           value="${cliente.cnpj || ''}" placeholder="Digite o CNPJ..." required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="celular">Celular *</label>
+                    <input type="text" class="form-control" name="celular" id="celular"
+                           value="${cliente.celular || ''}" placeholder="Digite o celular..." required>
+                </div>
 
-            ${inputField("Logradouro", "logradouro", cliente.logradouro || "")}
-            ${inputField("Número", "numero", cliente.numero || "", false)}
-            ${inputField("Bairro", "bairro", cliente.bairro || "", false)}
+                ${inputField("E-mail", "email", cliente.email || "", false)}
+                ${inputField("Telefone", "telefone", cliente.telefone || "", false)}
 
-            <div class="col-md-6 mb-3">
-                <label>Estado</label>
-                <select id="estadoSelectPJ" class="form-control" name="estado" required>
-                    <option value="">Selecione o estado</option>
-                </select>
+                ${inputField("CEP", "cep", cliente.cep || "", false)}
+                ${inputField("Logradouro", "logradouro", cliente.logradouro || "", false)}
+
+                ${inputField("Número", "numero", cliente.numero || "", false)}
+                ${inputField("Bairro", "bairro", cliente.bairro || "", false)}
+
+                <div class="col-md-6 mb-3">
+                    <label for="estadoSelectPJ">Estado *</label>
+                    <select id="estadoSelectPJ" class="form-control" name="estado" required>
+                        <option value="">Selecione o estado</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="cidadeSelectPJ">Cidade *</label>
+                    <select id="cidadeSelectPJ" class="form-control" name="cidade" required>
+                        <option value="">Selecione a cidade</option>
+                    </select>
+                </div>
             </div>
-            <div class="col-md-6 mb-3">
-                <label>Cidade</label>
-                <select id="cidadeSelectPJ" class="form-control" name="cidade" required>
-                    <option value="">Selecione a cidade</option>
-                </select>
-            </div>
-          </div>
 
-          <div class="text-end mt-3">
-            <button type="button" class="btn btn-secondary" id="fecharEdicaoCliente">
-              <i class="fas fa-times"></i> Fechar
-            </button>
-            <button type="button" class="btn btn-success" id="atualizarEdicaoCliente">
-              <i class="fas fa-save"></i> Atualizar
-            </button>
-          </div>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div id="mensagemCamposObrigatorios" class="alert alert-info mb-0 py-2 px-3">
+                    <i class="fas fa-info-circle"></i> Os campos marcados com * são obrigatórios.
+                </div>
+
+                <div>
+                    <button type="button" class="btn btn-secondary me-2" id="fecharEdicaoCliente">
+                        <i class="fas fa-times"></i> Fechar
+                    </button>
+                    <button type="button" class="btn btn-success" id="atualizarEdicaoCliente">
+                        <i class="fas fa-save"></i> Atualizar
+                    </button>
+                </div>
+            </div>
         </form>
         `;
     }
+
 }
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -223,14 +242,14 @@ function inicializarValidacaoFormulario(tipo) {
         messages: {
             nome: { required: "Informe o nome." },
             cpf: { required: "Informe o CPF." },
-            
+
             razao_social: { required: "Informe a Razão Social." },
             cnpj: { required: "Informe o CNPJ." },
             celular: { required: "Informe o celular." },
         },
         errorClass: "text-danger small",
         errorElement: "span",
-        errorPlacement: function(error, element) {
+        errorPlacement: function (error, element) {
             error.insertAfter(element);
         }
     });
@@ -259,7 +278,7 @@ async function inicializarSelectEstadoCidade(tipo) {
     criarChoices($cidade);
 
     // Ao mudar estado => carrega cidades
-    $estado.on("change", async function() {
+    $estado.on("change", async function () {
         let uf = $(this).val();
         await carregarCidades(uf, $cidade, "Selecione a cidade");
     });
@@ -338,14 +357,14 @@ function setSelectedValueCidade(tipo, city) {
 ////////////////////////////////////////////////////////////////////////////////
 function inicializarAutoFillCEP(tipo) {
     if (tipo === "pessoa_fisica") {
-        $(document).on("input", "input[name='cep']", async function() {
+        $(document).on("input", "input[name='cep']", async function () {
             let cep = $(this).val().replace(/\D/g, "");
             if (cep.length === 8) {
                 await buscarCepPF(cep);
             }
         });
     } else {
-        $(document).on("input", "input[name='cep']", async function() {
+        $(document).on("input", "input[name='cep']", async function () {
             let cep = $(this).val().replace(/\D/g, "");
             if (cep.length === 8) {
                 await buscarCepPJ(cep);
@@ -357,7 +376,7 @@ function inicializarAutoFillCEP(tipo) {
 async function buscarCepPF(cep) {
     let $cepStatus = $("#cepStatusPF");
     $cepStatus.removeClass("text-success text-danger")
-              .html('<i class="fas fa-spinner fa-spin"></i> Buscando CEP...');
+        .html('<i class="fas fa-spinner fa-spin"></i> Buscando CEP...');
 
     try {
         let data = await $.getJSON(`https://viacep.com.br/ws/${cep}/json/`);
@@ -370,14 +389,14 @@ async function buscarCepPF(cep) {
             setSelectedValueCidade("pessoa_fisica", data.localidade);
 
             $cepStatus.removeClass("text-danger").addClass("text-success")
-                      .html('<i class="fas fa-check"></i> CEP localizado!');
+                .html('<i class="fas fa-check"></i> CEP localizado!');
         } else {
             $cepStatus.removeClass("text-success").addClass("text-danger")
-                      .html('<i class="fas fa-times"></i> CEP inválido. Tente outro.');
+                .html('<i class="fas fa-times"></i> CEP inválido. Tente outro.');
         }
     } catch (err) {
         $cepStatus.removeClass("text-success").addClass("text-danger")
-                  .html('<i class="fas fa-times"></i> Erro ao buscar CEP. Tente novamente.');
+            .html('<i class="fas fa-times"></i> Erro ao buscar CEP. Tente novamente.');
         console.error("Erro CEP PF:", err);
     }
 }
@@ -385,7 +404,7 @@ async function buscarCepPF(cep) {
 async function buscarCepPJ(cep) {
     let $cepStatus = $("#cepStatusPJ");
     $cepStatus.removeClass("text-success text-danger")
-              .html('<i class="fas fa-spinner fa-spin"></i> Buscando CEP...');
+        .html('<i class="fas fa-spinner fa-spin"></i> Buscando CEP...');
 
     try {
         let data = await $.getJSON(`https://viacep.com.br/ws/${cep}/json/`);
@@ -398,14 +417,14 @@ async function buscarCepPJ(cep) {
             setSelectedValueCidade("pessoa_juridica", data.localidade);
 
             $cepStatus.removeClass("text-danger").addClass("text-success")
-                      .html('<i class="fas fa-check"></i> CEP localizado!');
+                .html('<i class="fas fa-check"></i> CEP localizado!');
         } else {
             $cepStatus.removeClass("text-success").addClass("text-danger")
-                      .html('<i class="fas fa-times"></i> CEP inválido. Tente outro.');
+                .html('<i class="fas fa-times"></i> CEP inválido. Tente outro.');
         }
     } catch (err) {
         $cepStatus.removeClass("text-success").addClass("text-danger")
-                  .html('<i class="fas fa-times"></i> Erro ao buscar CEP. Tente novamente.');
+            .html('<i class="fas fa-times"></i> Erro ao buscar CEP. Tente novamente.');
         console.error("Erro CEP PJ:", err);
     }
 }
@@ -416,7 +435,7 @@ async function buscarCepPJ(cep) {
 ////////////////////////////////////////////////////////////////////////////////
 function inicializarAutoFillCNPJ() {
     // Vamos exibir mensagem no #cnpjStatusPJ
-    $(document).on("input", "input[name='cnpj']", async function() {
+    $(document).on("input", "input[name='cnpj']", async function () {
         let cnpj = $(this).val().replace(/\D/g, "");
         if (cnpj.length === 14) {
             await buscarCnpjPJ(cnpj);
@@ -427,7 +446,7 @@ function inicializarAutoFillCNPJ() {
 async function buscarCnpjPJ(cnpj) {
     let $cnpjStatus = $("#cnpjStatusPJ");
     $cnpjStatus.removeClass("text-success text-danger")
-               .html('<i class="fas fa-spinner fa-spin"></i> Buscando CNPJ...');
+        .html('<i class="fas fa-spinner fa-spin"></i> Buscando CNPJ...');
 
     try {
         let dataBrasil = await $.getJSON(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
@@ -435,7 +454,7 @@ async function buscarCnpjPJ(cnpj) {
         await preencherCnpjBrasil(dataBrasil);
 
         $cnpjStatus.removeClass("text-danger").addClass("text-success")
-                   .html('<i class="fas fa-check"></i> CNPJ localizado!');
+            .html('<i class="fas fa-check"></i> CNPJ localizado!');
     } catch (err1) {
         // Tenta openCNPJ
         try {
@@ -443,10 +462,10 @@ async function buscarCnpjPJ(cnpj) {
             await preencherCnpjOpen(dataOpen);
 
             $cnpjStatus.removeClass("text-danger").addClass("text-success")
-                       .html('<i class="fas fa-check"></i> CNPJ localizado!');
+                .html('<i class="fas fa-check"></i> CNPJ localizado!');
         } catch (err2) {
             $cnpjStatus.removeClass("text-success").addClass("text-danger")
-                       .html('<i class="fas fa-times"></i> CNPJ inválido ou API fora do ar.');
+                .html('<i class="fas fa-times"></i> CNPJ inválido ou API fora do ar.');
             console.warn("CNPJ não encontrado ou inválido");
         }
     }
@@ -513,15 +532,22 @@ async function atualizarCliente() {
     let id = $("input[name='id']").val();
     let csrfToken = $('meta[name="csrf-token"]').attr("content");
 
-    // 1) Exibe Swal de "Atualizando..." com loading
+    let podeFechar = false;
+    const tempoMinimo = 1500;
+    const tempoMaximo = 10000;
+
     Swal.fire({
         title: "Atualizando...",
+        text: "Aguarde enquanto os dados são atualizados.",
         allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+            setTimeout(() => { podeFechar = true; }, tempoMinimo);
+            setTimeout(() => { if (Swal.isVisible()) Swal.close(); }, tempoMaximo);
+        }
     });
-
-    // 2) Tempo mínimo de 1.5s antes de fechar
-    const tempoMinimo = new Promise(resolve => setTimeout(resolve, 1500));
 
     $.ajax({
         url: `/clientes/${id}`,
@@ -529,35 +555,57 @@ async function atualizarCliente() {
         headers: { "X-CSRF-TOKEN": csrfToken },
         data: formData,
 
-        success: async function(resp) {
-            await tempoMinimo; // aguarda 1.5s
-            // Exibe sucesso, até no máx. 10s
-            Swal.fire({
-                title: "Sucesso!",
-                text: resp.message || "Cliente atualizado com sucesso!",
-                icon: "success",
-                timer: 10000,
-                timerProgressBar: true
-            }).then(() => {
-                // Reload DataTable
-                $("#tabelaClientes").DataTable().ajax.reload();
-            });
+        success: function (resp) {
+            const mostrarSucesso = () => {
+                Swal.fire({
+                    title: "Sucesso!",
+                    text: resp.message || "Cliente atualizado com sucesso!",
+                    icon: "success",
+                    timer: 10000,
+                    timerProgressBar: true
+                }).then(() => {
+                    $("#tabelaClientes").DataTable().ajax.reload();
+                });
+            };
+
+            if (podeFechar) {
+                Swal.close();
+                mostrarSucesso();
+            } else {
+                setTimeout(() => {
+                    Swal.close();
+                    mostrarSucesso();
+                }, tempoMinimo);
+            }
         },
 
-        error: async function(xhr) {
-            await tempoMinimo;
-            let errorMsg = "Erro ao atualizar cliente.";
-            if (xhr.responseJSON && xhr.responseJSON.message) {
-                errorMsg = xhr.responseJSON.message;
+        error: function (xhr) {
+            const mostrarErro = () => {
+                let errorMsg = "Erro ao atualizar cliente.";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+
+                Swal.fire({
+                    title: "Erro!",
+                    text: errorMsg,
+                    icon: "error",
+                    timer: 10000,
+                    timerProgressBar: true
+                });
+                console.error(errorMsg);
+            };
+
+            if (podeFechar) {
+                Swal.close();
+                mostrarErro();
+            } else {
+                setTimeout(() => {
+                    Swal.close();
+                    mostrarErro();
+                }, tempoMinimo);
             }
-            Swal.fire({
-                title: "Erro!",
-                text: errorMsg,
-                icon: "error",
-                timer: 10000,
-                timerProgressBar: true
-            });
-            console.error(errorMsg);
         }
     });
 }
+

@@ -134,7 +134,7 @@
 
                                 <button type="button" class="btn btn-success" id="buttonAtualizarDadosEscritorio"
                                     style="{{ Auth::user()->escritorio ? '' : 'display: none;' }}">
-                                    <i class="fas fa-edit"></i> Atualizar Escritório
+                                    <i class="fas fa-save"></i> Atualizar Escritório
                                 </button>
                             @endcan
                         </div>

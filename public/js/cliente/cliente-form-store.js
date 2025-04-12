@@ -524,10 +524,21 @@ $(document).ready(function () {
             cidade: $("#cidadeCliente").val() || null
         };
 
+        let podeFechar = false;
+        const tempoMinimo = 1500;
+        const tempoMaximo = 10000;
+
         Swal.fire({
             title: 'Salvando...',
+            text: 'Aguarde enquanto cadastramos o cliente...',
             allowOutsideClick: false,
-            didOpen: () => Swal.showLoading(),
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+                setTimeout(() => { podeFechar = true; }, tempoMinimo);
+                setTimeout(() => { if (Swal.isVisible()) Swal.close(); }, tempoMaximo);
+            }
         });
 
         $.ajax({
@@ -536,20 +547,45 @@ $(document).ready(function () {
             headers: { "X-CSRF-TOKEN": csrfToken },
             data: formData,
             success: function (resp) {
-                Swal.fire("Sucesso!", resp.message || "Cliente PF cadastrado!", "success");
-                $("#formPessoaFisica")[0].reset();
-                $(document).trigger("clienteCadastrado", { tipo: "pessoa_fisica" });
+                const mostrarSucesso = () => {
+                    Swal.fire("Sucesso!", resp.message || "Cliente PF cadastrado!", "success");
+                    $("#formPessoaFisica")[0].reset();
+                    $(document).trigger("clienteCadastrado", { tipo: "pessoa_fisica" });
+                };
+
+                if (podeFechar) {
+                    Swal.close();
+                    mostrarSucesso();
+                } else {
+                    setTimeout(() => {
+                        Swal.close();
+                        mostrarSucesso();
+                    }, tempoMinimo);
+                }
             },
             error: function (xhr) {
-                let errorMsg = "Falha ao cadastrar cliente (PF).";
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMsg = xhr.responseJSON.message;
+                const mostrarErro = () => {
+                    let errorMsg = "Falha ao cadastrar cliente (PF).";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                    Swal.fire("Erro!", errorMsg, "error");
+                    console.error(xhr.responseText);
+                };
+
+                if (podeFechar) {
+                    Swal.close();
+                    mostrarErro();
+                } else {
+                    setTimeout(() => {
+                        Swal.close();
+                        mostrarErro();
+                    }, tempoMinimo);
                 }
-                Swal.fire("Erro!", errorMsg, "error");
-                console.error(xhr.responseText);
             }
         });
     });
+
 
     //--------------------------------------------------
     // 8) Form PJ - Validação e Botão Salvar
@@ -598,10 +634,21 @@ $(document).ready(function () {
             cidade: $("#cidadeJuridico").val() || null
         };
 
+        let podeFechar = false;
+        const tempoMinimo = 1500;
+        const tempoMaximo = 10000;
+
         Swal.fire({
             title: 'Salvando...',
+            text: 'Aguarde enquanto cadastramos o cliente...',
             allowOutsideClick: false,
-            didOpen: () => Swal.showLoading(),
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+                setTimeout(() => { podeFechar = true; }, tempoMinimo);
+                setTimeout(() => { if (Swal.isVisible()) Swal.close(); }, tempoMaximo);
+            }
         });
 
         $.ajax({
@@ -610,21 +657,43 @@ $(document).ready(function () {
             headers: { "X-CSRF-TOKEN": csrfToken },
             data: formData,
             success: function (resp) {
-                Swal.fire("Sucesso!", resp.message || "Cliente PJ cadastrado!", "success");
-                $("#formPessoaJuridica")[0].reset();
+                const mostrarSucesso = () => {
+                    Swal.fire("Sucesso!", resp.message || "Cliente PJ cadastrado!", "success");
+                    $("#formPessoaJuridica")[0].reset();
+                };
+
+                if (podeFechar) {
+                    Swal.close();
+                    mostrarSucesso();
+                } else {
+                    setTimeout(() => {
+                        Swal.close();
+                        mostrarSucesso();
+                    }, tempoMinimo);
+                }
             },
             error: function (xhr) {
-                let errorMsg = "Falha ao cadastrar cliente (PJ).";
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMsg = xhr.responseJSON.message;
+                const mostrarErro = () => {
+                    let errorMsg = "Falha ao cadastrar cliente (PJ).";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                    Swal.fire("Erro!", errorMsg, "error");
+                    console.error(xhr.responseText);
+                };
+
+                if (podeFechar) {
+                    Swal.close();
+                    mostrarErro();
+                } else {
+                    setTimeout(() => {
+                        Swal.close();
+                        mostrarErro();
+                    }, tempoMinimo);
                 }
-                Swal.fire("Erro!", errorMsg, "error");
-                console.error(xhr.responseText);
             }
         });
     });
-
-
 });
 
 $(function () {
