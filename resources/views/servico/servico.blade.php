@@ -61,34 +61,33 @@
                 <form id="formIniciarServico" enctype="multipart/form-data">
                     @csrf
 
-                    <!-- Tipo de Serviço -->
-                    <div class="form-group">
-                        <label for="tipoServico">Tipo de Serviço</label>
-                        <select class="form-control" id="tipoServico" name="tipo_servico_id" required>
-                            <option value="">Selecione um tipo de serviço</option>
-                        </select>
+                    <!-- Linha com os 3 selects -->
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="tipoServico">Tipo de Serviço</label>
+                            <select class="form-control" id="tipoServico" name="tipo_servico_id" required>
+                                <option value="">Selecione</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label for="tipoCliente">Tipo de Cliente</label>
+                            <select class="form-control" id="tipoCliente" name="tipo_cliente" required>
+                                <option value="">Selecione</option>
+                                <option value="pf">Pessoa Física</option>
+                                <option value="pj">Pessoa Jurídica</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-5">
+                            <label for="clienteServico">Cliente</label>
+                            <select class="form-control" id="clienteServico" name="cliente_id" required disabled>
+                                <option value="">Selecione</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Tipo de Cliente -->
-                    <div class="form-group">
-                        <label for="tipoCliente">Tipo de Cliente</label>
-                        <select class="form-control" id="tipoCliente" name="tipo_cliente" required>
-                            <option value="">Selecione o tipo</option>
-                            <option value="pf">Pessoa Física</option>
-                            <option value="pj">Pessoa Jurídica</option>
-                        </select>
-                    </div>
-
-                    <!-- Cliente -->
-                    <div class="form-group">
-                        <label for="clienteServico">Cliente</label>
-                        <select class="form-control" id="clienteServico" name="cliente_id" required disabled>
-                            <option value="">Selecione um cliente</option>
-                            <!-- Preenchido via AJAX no JS -->
-                        </select>
-                    </div>
-
-                    <!-- Data de Início -->
+                    <!-- Data -->
                     <div class="form-group">
                         <label for="dataInicio">Data de Início</label>
                         <input type="date" class="form-control" id="dataInicio" name="data_inicio" required>
@@ -98,7 +97,7 @@
                     <div class="form-group">
                         <label for="observacoes">Observações</label>
                         <textarea class="form-control" id="observacoes" name="observacoes" rows="3"
-                                  placeholder="Descreva detalhes iniciais, observações, etc..."></textarea>
+                            placeholder="Descreva detalhes iniciais, observações, etc..."></textarea>
                     </div>
 
                     <!-- Upload de Arquivos -->
@@ -108,15 +107,15 @@
                                accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt">
                         <small class="form-text text-muted">Você pode anexar documentos, imagens, PDFs, etc.</small>
 
-                        <!-- Lista de arquivos selecionados (JS preenche) -->
                         <ul id="listaArquivosSelecionados" class="mt-2"></ul>
                     </div>
 
-                    <!-- Botão de envio -->
+                    <!-- Botão -->
                     <button type="submit" class="btn btn-primary float-right" id="btnIniciarServico">
                         <i class="fas fa-play"></i> Iniciar Serviço
                     </button>
                 </form>
+
             </div>
         </div>
     </div>

@@ -46,7 +46,7 @@ class ServicoController
             'tipo_cliente'    => 'required|in:pf,pj',
             'data_inicio'     => 'required|date',
         ];
-        
+
         $messages = [
             'tipo_servico_id.required' => 'O tipo de serviço é obrigatório.',
             'tipo_servico_id.exists'   => 'Tipo de serviço não encontrado.',
@@ -54,9 +54,9 @@ class ServicoController
             'tipo_cliente.in'          => 'Tipo de cliente inválido.',
             'data_inicio.required'     => 'A data de início é obrigatória.',
         ];
-        
+
         $tipoCliente = strtolower($request->tipo_cliente);
-        
+
         if ($tipoCliente === 'pf') {
             $rules['cliente_id'] = 'required|exists:' . (new ClientePessoaFisica)->getTable() . ',id';
             $messages['cliente_id.required'] = 'O cliente é obrigatório.';
@@ -66,51 +66,51 @@ class ServicoController
             $messages['cliente_id.required'] = 'O cliente é obrigatório.';
             $messages['cliente_id.exists']   = 'Cliente pessoa jurídica não encontrado.';
         } else {
-            $rules['cliente_id'] = 'required'; // fallback básico se não informado corretamente
+            $rules['cliente_id'] = 'required';
             $messages['cliente_id.required'] = 'O cliente é obrigatório.';
         }
-        
+
         $validator = Validator::make($request->all(), $rules, $messages);
-        
+
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Erro de validação.',
                 'errors'  => $validator->errors()
             ], 422);
         }
+
         try {
             Log::info('Iniciando cadastro de novo serviço...', [
                 'payload_recebido' => $request->all()
             ]);
-    
+
             $usuario = auth()->user();
-    
+
             if (!$usuario || !$usuario->id) {
                 return response()->json(['message' => 'Usuário não autenticado.'], 401);
             }
-    
+
             $escritorio = Escritorio::where('user_id', $usuario->id)->first();
-    
+
             if (!$escritorio) {
                 Log::warning('Usuário autenticado, mas sem escritório associado.', [
                     'user_id' => $usuario->id
                 ]);
                 return response()->json(['message' => 'Usuário não autenticado ou sem escritório associado.'], 401);
             }
-    
-            $tipoClienteConvertido = match (strtolower($request->tipo_cliente)) {
+
+            $tipoClienteConvertido = match ($tipoCliente) {
                 'pf' => 'pessoa_fisica',
                 'pj' => 'pessoa_juridica',
                 default => null,
             };
-    
+
             if (!$tipoClienteConvertido) {
                 return response()->json(['message' => 'Tipo de cliente inválido.'], 422);
             }
-    
+
             DB::beginTransaction();
-    
-            // Criação do serviço
+
             $servico = Servico::create([
                 'escritorio_id'     => $escritorio->id,
                 'tipo_servico_id'   => $request->tipo_servico_id,
@@ -119,52 +119,47 @@ class ServicoController
                 'data_inicio'       => $request->data_inicio,
                 'observacoes'       => $request->observacoes,
             ]);
-    
-            // Upload de anexos - Versão com debug detalhado
+
             $arquivos = $request->file('anexos') ?? [];
-            
-            // Log detalhado dos arquivos recebidos
+
             Log::info('Detalhes dos arquivos recebidos:', [
                 'quantidade' => count($arquivos),
                 'é_array' => is_array($arquivos),
                 'tipo' => gettype($arquivos)
             ]);
-            
-            // Verificar cada arquivo individualmente
+
             foreach ($arquivos as $index => $arquivo) {
                 Log::info("Detalhes do arquivo {$index}:", [
                     'nome_original' => $arquivo->getClientOriginalName(),
                     'tamanho' => $arquivo->getSize(),
                     'mime_type' => $arquivo->getMimeType(),
-                    'hash_md5' => md5_file($arquivo->getRealPath()), // Para verificar se são arquivos idênticos
+                    'hash_md5' => md5_file($arquivo->getRealPath()),
                     'caminho_temp' => $arquivo->getRealPath()
                 ]);
             }
-    
+
             if (!empty($arquivos)) {
                 $clienteId = $request->cliente_id;
-                $pasta = "public/arquivos_servicos/servico_{$servico->id}_cliente_{$clienteId}";
-                
+                $pasta = "arquivos_servicos/servico_{$servico->id}_cliente_{$clienteId}";
+
                 foreach ($arquivos as $index => $arquivo) {
                     if ($arquivo->isValid()) {
-                        // Gerar um nome único para evitar sobrescrever arquivos com mesmo nome
                         $nomeOriginal = $arquivo->getClientOriginalName();
                         $extensao = $arquivo->getClientOriginalExtension();
                         $nomeArquivo = pathinfo($nomeOriginal, PATHINFO_FILENAME) . '_' . time() . '_' . $index . '_' . rand(1000, 9999) . '.' . $extensao;
-                        
-                        // Salvar o arquivo
-                        $arquivo->storeAs($pasta, $nomeArquivo);
-                        
+
+                        // Salvar no disco "public"
+                        $arquivo->storeAs($pasta, $nomeArquivo, 'public');
+
                         Log::info("Arquivo {$index} salvo com sucesso", [
                             'nome_original' => $nomeOriginal,
                             'nome_salvo' => $nomeArquivo,
-                            'caminho' => $pasta . '/' . $nomeArquivo
+                            'caminho' => "storage/{$pasta}/{$nomeArquivo}"
                         ]);
                     }
                 }
             }
-    
-            // Agendamento, se marcado
+
             if ($request->agendar_consulta) {
                 Agenda::create([
                     'escritorio_id'     => $escritorio->id,
@@ -176,11 +171,8 @@ class ServicoController
                     'motivo_agenda_id'  => $request->motivo_agenda_id,
                 ]);
             }
-    
-            // Registro do andamento inicial
-            $primeiroAndamento = AndamentoServico::where('servico_id', $servico->id)->count();
-    
-            if ($primeiroAndamento === 0) {
+
+            if (AndamentoServico::where('servico_id', $servico->id)->count() === 0) {
                 AndamentoServico::create([
                     'servico_id' => $servico->id,
                     'etapa'      => 'Iniciado',
@@ -189,9 +181,9 @@ class ServicoController
                     'data_hora'  => now(),
                 ]);
             }
-    
+
             DB::commit();
-    
+
             return response()->json(['message' => 'Serviço cadastrado com sucesso.']);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -203,7 +195,6 @@ class ServicoController
             return response()->json(['message' => 'Erro ao iniciar o serviço.'], 500);
         }
     }
-    
 
 
     /**
