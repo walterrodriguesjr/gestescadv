@@ -4,6 +4,7 @@
 
 @section('content')
 
+    {{-- collapse cadastrar novo servico --}}
     <div id="cardNovoServico" class="col-md-12">
         <div class="card card-outline card-primary collapsed-card">
             <div class="card-header d-flex align-items-center card-toggle-header">
@@ -21,7 +22,7 @@
                     <div class="form-group">
                         <label for="nomeServico">Nome do Tipo de Serviço</label>
                         <input type="text" class="form-control" id="nomeServico" name="nome_servico"
-                               placeholder="Informe o nome do serviço" required>
+                            placeholder="Informe o nome do serviço" required>
                     </div>
 
                     <button type="button" class="btn btn-primary float-right" id="salvarTipoServico">
@@ -46,6 +47,7 @@
         </div>
     </div>
 
+    {{-- collapse iniciar servico --}}
     <div id="cardIniciarServico" class="col-md-12">
         <div class="card card-outline card-primary collapsed-card">
             <div class="card-header d-flex align-items-center card-toggle-header">
@@ -104,7 +106,7 @@
                     <div class="form-group">
                         <label for="arquivosServico">Anexos</label>
                         <input type="file" class="form-control" id="arquivosServico" name="anexos[]" multiple
-                               accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt">
+                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt">
                         <small class="form-text text-muted">Você pode anexar documentos, imagens, PDFs, etc.</small>
 
                         <ul id="listaArquivosSelecionados" class="mt-2"></ul>
@@ -119,7 +121,51 @@
             </div>
         </div>
     </div>
+
+    <!-- Collapse: Listagem de Serviços -->
+    <div id="cardListarServicos" class="col-md-12">
+        <div class="card card-outline card-primary">
+            <div class="card-header d-flex align-items-center card-toggle-header">
+                <h3 class="card-title mb-0">Listar Serviços</h3>
+                <div class="card-tools ml-auto">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- Filtros de Tipo de Cliente -->
+                <div class="d-flex justify-content-start gap-3 mb-3">
+                    <button id="btnFiltroPF" class="btn btn-outline-primary">
+                        <i class="fas fa-user"></i> Pessoa Física
+                    </button>
+                    <button id="btnFiltroPJ" class="btn btn-outline-success">
+                        <i class="fas fa-building"></i> Pessoa Jurídica
+                    </button>
+                </div>
+
+                <!-- Tabela de Serviços -->
+                <div class="table-responsive">
+                    <table id="tabelaServicos" class="table table-striped table-bordered w-100">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Nome</th>
+                                <th>CPF / CNPJ</th>
+                                <th>Celular</th>
+                                <th>Status</th>
+                                <th style="width: 100px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+
+
 
 @push('scripts')
     <!-- ID do Escritório para uso no JS -->
@@ -136,9 +182,12 @@
     <!-- Script com toda a lógica de iniciar serviço, anexos etc. -->
     <script src="{{ asset('js/servico/novo_servico/novo-servico-form-store.js') }}"></script>
 
+    {{-- Script de Listar Serviços --}}
+    <script src="{{ asset('js/servico/lista_servico/lista-servico-form-show.js') }}"></script>
+
     <script>
         $(document).ready(function() {
-            // Controle do Collapse (abrir/fechar card)
+            // Collapse toggle
             $('.card-toggle-header').on('click', function(e) {
                 e.preventDefault();
                 let $card = $(this).closest('.card');
@@ -148,7 +197,7 @@
                 $card.toggleClass('collapsed-card');
             });
 
-            // Exemplo: cadastro rápido de "Novo Tipo de Serviço"
+            // Cadastro rápido de novo tipo de serviço
             $("#formNovoServico").on("submit", function(e) {
                 e.preventDefault();
                 let nomeServico = $("#nomeServico").val();
@@ -169,14 +218,14 @@
                         nome_servico: nomeServico
                     },
                     success: function(resp) {
-                        Swal.fire("Sucesso!", resp.message || "Serviço cadastrado com sucesso!", "success");
+                        Swal.fire("Sucesso", resp.message || "Serviço cadastrado com sucesso!",
+                            "success");
                         $("#formNovoServico")[0].reset();
-
-                        // Exemplo: se tiver DataTables para exibir "Tipos de Serviços"
-                        tabelaTipoServicos.ajax.reload();
+                        if (window.tabelaTipoServicos) tabelaTipoServicos.ajax.reload();
                     },
                     error: function(xhr) {
-                        Swal.fire("Erro!", xhr.responseJSON?.message || "Erro ao cadastrar serviço.", "error");
+                        Swal.fire("Erro", xhr.responseJSON?.message ||
+                            "Erro ao cadastrar serviço.", "error");
                     }
                 });
             });

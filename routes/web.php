@@ -192,14 +192,14 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
     Route::put('/atualizar_tipo_servico/{id}', [ServicoController::class, 'atualizar_tipo_servico'])->name('tipo_servicos.atualizar_tipo_servico');
     Route::delete('/deletar_tipo_servico/{id}', [ServicoController::class, 'deletar_tipo_servico'])->name('tipo_servicos.deletar_tipo_servico');
 
+    Route::get('/servicos/listar', [ServicoController::class, 'listarServicos'])->name('servicos.listar');
     Route::post('/servicos', [ServicoController::class, 'store'])->name('servicos.store');
 
-    
+
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])
     ->name('membro-escritorio.show');
-
 
 /**
  * Rotas de autenticação

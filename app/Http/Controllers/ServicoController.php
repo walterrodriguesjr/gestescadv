@@ -16,10 +16,42 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Models\ClientePessoaFisica;
 use App\Models\ClientePessoaJuridica;
+use Illuminate\Support\Facades\Crypt;
 
 
 class ServicoController
 {
+
+    public function listarServicos(Request $request)
+{
+    try {
+        $tipo = $request->input('tipo');
+
+        if (!in_array($tipo, ['pessoa_fisica', 'pessoa_juridica'])) {
+            return response()->json(['message' => 'Tipo de cliente inválido.'], 400);
+        }
+
+        $servicos = Servico::with(['tipoServico', 'andamentos'])
+            ->where('tipo_cliente', $tipo)
+            ->get()
+            ->map(function ($servico) {
+                $cliente = $servico->clienteFormatado;
+
+                return [
+                    'id' => $servico->id,
+                    'nome' => $cliente?->nome ?? $cliente?->razao_social ?? '—',
+                    'cpf_cnpj' => $cliente?->cpf ? Crypt::decryptString($cliente->cpf) : ($cliente?->cnpj ? Crypt::decryptString($cliente->cnpj) : '—'),
+                    'celular' => $cliente?->celular ? Crypt::decryptString($cliente->celular) : null,
+                    'status' => $servico->andamentos->last()?->etapa ?? 'Não iniciado',
+                ];
+            });
+
+        return response()->json(['data' => $servicos]);
+    } catch (\Throwable $e) {
+        Log::error('Erro ao listar serviços: ' . $e->getMessage());
+        return response()->json(['message' => 'Erro ao buscar serviços.'], 500);
+    }
+}
     /**
      * Display a listing of the resource.
      */
