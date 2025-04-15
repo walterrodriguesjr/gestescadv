@@ -122,21 +122,21 @@
         </div>
     </div>
 
-    <!-- Collapse: Listagem de Serviços -->
+    <!-- Collapse: Acompanhar Serviços -->
     <div id="cardListarServicos" class="col-md-12">
-        <div class="card card-outline card-primary">
+        <div class="card card-outline card-primary collapsed-card"> <!-- collapsed por padrão -->
             <div class="card-header d-flex align-items-center card-toggle-header">
-                <h3 class="card-title mb-0">Listar Serviços</h3>
+                <h3 class="card-title mb-0">Acompanhar Serviços</h3>
                 <div class="card-tools ml-auto">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
+                    <button type="button" class="btn btn-tool">
+                        <i class="fas fa-plus"></i>
                     </button>
                 </div>
             </div>
 
-            <div class="card-body">
+            <div class="card-body" style="display: none;">
                 <!-- Filtros de Tipo de Cliente -->
-                <div class="d-flex justify-content-start gap-3 mb-3">
+                <div class="d-flex justify-content-start gap-2 mb-3">
                     <button id="btnFiltroPF" class="btn btn-outline-primary">
                         <i class="fas fa-user"></i> Pessoa Física
                     </button>
@@ -148,21 +148,22 @@
                 <!-- Tabela de Serviços -->
                 <div class="table-responsive">
                     <table id="tabelaServicos" class="table table-striped table-bordered w-100">
-                        <thead class="thead-dark">
+                        <thead class="thead-light">
                             <tr>
                                 <th>Nome</th>
                                 <th>CPF / CNPJ</th>
                                 <th>Celular</th>
-                                <th>Status</th>
-                                <th style="width: 100px;">Ações</th>
+                                <th>Etapa Atual</th>
+                                <th style="width: 90px;">Ações</th>
                             </tr>
                         </thead>
-                        <tbody></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
+
+
 @endsection
 
 
