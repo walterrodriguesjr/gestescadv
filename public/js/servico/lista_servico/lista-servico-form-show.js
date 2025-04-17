@@ -2,9 +2,9 @@ let tabelaServicos;
 let tipoClienteAtual = null;
 
 $(document).ready(function () {
-    // Inicializa DataTable sem dados
+    // Inicializa DataTable vazio
     tabelaServicos = $('#tabelaServicos').DataTable({
-        data: [], // começa vazio
+        data: [],
         columns: [
             { data: 'nome', title: 'Nome / Razão Social' },
             { data: 'cpf_cnpj', title: 'CPF / CNPJ' },
@@ -45,22 +45,6 @@ $(document).ready(function () {
         }
     });
 
-    // Controle do ícone do card collapse
-    $('.card-toggle-header').on('click', function () {
-        const $card = $(this).closest('.card');
-        const $body = $card.find('.card-body');
-        const $icon = $(this).find('i');
-
-        if ($card.hasClass('collapsed-card')) {
-            $card.removeClass('collapsed-card');
-            $body.slideDown();
-            $icon.removeClass('fa-plus').addClass('fa-minus');
-        } else {
-            $card.addClass('collapsed-card');
-            $body.slideUp();
-            $icon.removeClass('fa-minus').addClass('fa-plus');
-        }
-    });
 
     function abrirCardServicos() {
         const $card = $('#cardListarServicos .card');
