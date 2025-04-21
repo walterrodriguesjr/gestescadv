@@ -21,6 +21,13 @@ class Agenda extends Model
         'honorario',
     ];
 
+    protected $casts = [
+        'data_hora_inicio' => 'datetime',
+        'data_hora_fim' => 'datetime',
+        'honorario' => 'decimal:2',
+    ];
+
+
     public function escritorio()
     {
         return $this->belongsTo(Escritorio::class);

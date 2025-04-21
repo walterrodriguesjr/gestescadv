@@ -13,8 +13,10 @@ class AndamentoServico extends Model
 
     protected $fillable = [
         'servico_id',
+        'agenda_id',
         'etapa',
         'descricao',
+        'observacoes',
         'honorario',
         'data_hora',
     ];
@@ -47,4 +49,10 @@ class AndamentoServico extends Model
     {
         return $this->data_hora->format('d/m/Y H:i');
     }
+
+    public function agenda()
+{
+    return $this->belongsTo(Agenda::class, 'agenda_id');
+}
+
 }

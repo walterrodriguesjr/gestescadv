@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->date('data_inicio');
             $table->text('observacoes')->nullable();
             $table->json('anexos')->nullable();
+            $table->string('numero_processo', 25)->nullable();
 
             $table->timestamps();
         });

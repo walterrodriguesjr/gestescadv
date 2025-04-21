@@ -89,6 +89,18 @@
                         </div>
                     </div>
 
+                    <!-- Número do Processo (opcional) -->
+                    <div class="form-group">
+                        <label for="numeroProcesso">
+                            Número do processo <small class="text-muted">(CNJ, opcional, poderá ser inserido posteriomente)</small>
+                        </label>
+                        <input type="text"
+                               class="form-control processo-mask"
+                               id="numeroProcesso"
+                               name="numero_processo"
+                               placeholder="0000000-00.0000.0.00.0000">
+                    </div>
+
                     <!-- Data -->
                     <div class="form-group">
                         <label for="dataInicio">Data de Início</label>
@@ -99,14 +111,14 @@
                     <div class="form-group">
                         <label for="observacoes">Observações</label>
                         <textarea class="form-control" id="observacoes" name="observacoes" rows="3"
-                            placeholder="Descreva detalhes iniciais, observações, etc..."></textarea>
+                                  placeholder="Descreva detalhes iniciais, observações, etc..."></textarea>
                     </div>
 
                     <!-- Upload de Arquivos -->
                     <div class="form-group">
                         <label for="arquivosServico">Anexos</label>
                         <input type="file" class="form-control" id="arquivosServico" name="anexos[]" multiple
-                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt">
+                               accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt">
                         <small class="form-text text-muted">Você pode anexar documentos, imagens, PDFs, etc.</small>
 
                         <ul id="listaArquivosSelecionados" class="mt-2"></ul>
@@ -117,10 +129,10 @@
                         <i class="fas fa-play"></i> Iniciar Serviço
                     </button>
                 </form>
-
             </div>
         </div>
     </div>
+
 
     <!-- Collapse: Acompanhar Serviços -->
     <div id="cardListarServicos" class="col-md-12">
@@ -154,7 +166,7 @@
                                 <th>CPF / CNPJ</th>
                                 <th>Celular</th>
                                 <th>Etapa Atual</th>
-                                <th style="width: 90px;">Ações</th>
+                                <th style="width: 100px;">Ações</th>
                             </tr>
                         </thead>
                     </table>

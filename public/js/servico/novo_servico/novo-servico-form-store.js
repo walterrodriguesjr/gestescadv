@@ -375,6 +375,9 @@ $(document).on('change', '#checkboxAgendarConsulta', function () {
 // (G) Quando a página carrega
 $(document).ready(function () {
 
+    // Máscara CNJ para o novo campo (não obrigatório)
+    $('#numeroProcesso').mask('0000000-00.0000.0.00.0000');
+
     // Coloca data de hoje no campo #dataInicio
     const hoje = new Date();
     const ano = hoje.getFullYear();
@@ -560,4 +563,3 @@ $(document).ready(function () {
     // Logo de cara, atualiza lista (caso o array não esteja vazio)
     atualizarListaArquivos();
 });
-

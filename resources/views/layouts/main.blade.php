@@ -137,6 +137,10 @@
     <!-- Dropzone JS -->
     <script src="{{ asset('vendor/dropzone/js/dropzone-min.js') }}"></script>
 
+    <!-- Moment.js -->
+    <script src="{{ asset('vendor/moment-js/js/moment-with-locales.js') }}"></script>
+
+
     <!-- Scripts adicionais -->
     @stack('scripts')
 

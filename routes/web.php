@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AndamentoServicoController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\PasswordController;
@@ -195,7 +196,31 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
     Route::get('/servicos/listar', [ServicoController::class, 'listarServicos'])->name('servicos.listar');
     Route::post('/servicos', [ServicoController::class, 'store'])->name('servicos.store');
 
+    // Grupo de rotas para Andamentos
+    Route::prefix('andamentos')->name('andamentos.')->group(function () {
+        Route::get('/{servico}/buscar-observacoes', [AndamentoServicoController::class, 'buscarObservacoes'])->name('buscarObservacoes');
+        Route::put('/{servico}/atualizar-observacoes', [AndamentoServicoController::class, 'atualizarObservacoes'])->name('atualizarObservacoes');
+        Route::get('/{servico}', [AndamentoServicoController::class, 'index'])->name('index'); // visualizar
+        Route::post('/{servico}', [AndamentoServicoController::class, 'store'])->name('store'); // salvar novo
+        Route::get('/{servico}/listar', [AndamentoServicoController::class, 'listarAjax'])->name('listar'); // se usar datatables ajax
+        Route::delete('/remover/{id}', [AndamentoServicoController::class, 'destroy'])->name('destroy'); // deletar
+        Route::post('/{servicoId}/{andamentoId}/{clienteId}/arquivos', [AndamentoServicoController::class, 'anexarArquivo'])
+            ->name('arquivos.anexar');
 
+        Route::get('/{servicoId}/{andamentoId}/{clienteId}/arquivos', [AndamentoServicoController::class, 'listarArquivos'])
+            ->name('arquivos.listar');
+
+
+        // rota intermediária para evitar conflito com nome do arquivo na URL
+        Route::post('/arquivos/{servicoId}/{andamentoId}/{clienteId}/deletar', [AndamentoServicoController::class, 'deletarArquivo'])
+            ->name('arquivos.deletar.post');
+
+        Route::delete('/arquivos/{servicoId}/{andamentoId}/{clienteId}/{fileName}', [AndamentoServicoController::class, 'deletarArquivo'])
+            ->where('fileName', '.*')
+            ->name('arquivos.deletar');
+    });
+    // web.php  (dentro do grupo protegido, fora do prefix('andamentos'))
+    Route::put('/arquivos/editar-nome', [AndamentoServicoController::class, 'atualizarNomeArquivo'])->name('arquivos.atualizar');
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])
