@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\EscritorioController;
+use App\Http\Controllers\EtapaServicoController;
 use App\Http\Controllers\MembroEscritorioController;
 use App\Http\Controllers\NivelAcessoController;
 use App\Http\Controllers\PerfilController;
@@ -221,6 +222,10 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
     });
     // web.php  (dentro do grupo protegido, fora do prefix('andamentos'))
     Route::put('/arquivos/editar-nome', [AndamentoServicoController::class, 'atualizarNomeArquivo'])->name('arquivos.atualizar');
+
+    Route::get('/etapas-servico', [EtapaServicoController::class, 'listar'])->name('etapas-servico.listar');
+    Route::post('/andamentos/{servico}', [AndamentoServicoController::class, 'store'])->name('andamentos.store');
+
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])

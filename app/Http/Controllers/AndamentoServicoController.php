@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Validator;
+
 
 class AndamentoServicoController
 {
@@ -217,26 +219,37 @@ class AndamentoServicoController
 
 
 
-    public function store(Request $request, $servicoId)
-    {
-        $request->validate([
-            'etapa' => 'required|string|max:255',
-            'descricao' => 'nullable|string',
-            'data_hora' => 'required|date'
-        ]);
+public function store(Request $request, $servicoId)
+{
+    $validator = Validator::make($request->all(), [
+        'etapa' => 'required|string|max:255',
+        'descricao' => 'nullable|string',
+        'observacoes' => 'nullable|string',
+        'honorario' => 'nullable|numeric',
+        'data_hora' => 'required|date',
+    ]);
 
-        $andamento = AndamentoServico::create([
-            'servico_id' => $servicoId,
-            'etapa' => $request->etapa,
-            'descricao' => $request->descricao,
-            'data_hora' => $request->data_hora,
-        ]);
-
+    if ($validator->fails()) {
         return response()->json([
-            'message' => 'Andamento salvo com sucesso!',
-            'andamento' => $andamento
-        ]);
+            'message' => 'Erro de validação.',
+            'errors' => $validator->errors(),
+        ], 422);
     }
+
+    $andamento = AndamentoServico::create([
+        'servico_id' => $servicoId,
+        'etapa' => $request->etapa,
+        'descricao' => $request->descricao,
+        'observacoes' => $request->observacoes,
+        'honorario' => $request->honorario ?? null,
+        'data_hora' => $request->data_hora,
+    ]);
+
+    return response()->json([
+        'message' => 'Andamento salvo com sucesso!',
+        'andamento' => $andamento
+    ]);
+}
 
     public function destroy($id)
     {

@@ -4,13 +4,22 @@
 
 @section('content')
     {{-- botão Voltar --}}
-    <div class="row mb-3">
-        <div class="col-md-12">
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-4">
             <a href="{{ url()->previous() }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Voltar
             </a>
         </div>
+    
+        <div class="col-md-4 text-center">
+            <button class="btn btn-primary" onclick="abrirFormularioNovoAndamento({{ $servico->id }})">
+                <i class="fas fa-plus"></i> Inserir Andamento
+            </button>
+        </div>
+    
+        <div class="col-md-4"></div>
     </div>
+    
 
     {{-- ──────────────── Card – Informações do Serviço ──────────────── --}}
     <div class="row mb-4">
@@ -175,5 +184,6 @@
 
     {{-- Observações e Arquivos --}}
     <script src="{{ asset('js/servico/andamento_servico/observacoes-servico-store.js') }}"></script>
+    <script src="{{ asset('js/servico/andamento_servico/arquivos-servico-andamento.js') }}"></script>
     <script src="{{ asset('js/servico/andamento_servico/arquivos-servico-andamento-store.js') }}"></script>
 @endpush
