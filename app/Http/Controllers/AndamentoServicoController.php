@@ -177,79 +177,108 @@ class AndamentoServicoController
     }
 
 
-    public function index($servicoId)
-{
-    $servico = Servico::with(['tipoServico', 'andamentos'])->findOrFail($servicoId);
-    $cliente = $servico->clienteFormatado;
+    // Controller: AndamentoServicoController.php
+    public function listarAndamentos(Request $request, $servicoId)
+    {
+        $andamentos = AndamentoServico::with('agenda')
+            ->where('servico_id', $servicoId)
+            ->orderByDesc('data_hora')
+            ->paginate(5);
 
-    // Descriptografar CPF, CNPJ e celular
-    $cpfCnpj = $cliente?->cpf
-        ? Crypt::decryptString($cliente->cpf)
-        : ($cliente?->cnpj ? Crypt::decryptString($cliente->cnpj) : null);
-
-    $tipoDocumento = $cliente?->cpf ? 'cpf' : ($cliente?->cnpj ? 'cnpj' : null);
-
-    $andamentos = AndamentoServico::with('agenda')
-        ->where('servico_id', $servicoId)
-        ->orderByDesc('data_hora') // ordem decrescente
-        ->get()
-        ->map(function ($item) {
+        $dados = $andamentos->map(function ($item) {
             $isAgenda = $item->agenda_id && $item->agenda;
-
-            return (object) [
-                'id'            => $item->id,
-                'tipo'          => $isAgenda ? 'agenda' : 'andamento',
-                'etapa'         => $item->etapa,
-                'descricao'     => $item->descricao ?? 'Sem descrição informada.',
-                'data_hora'     => $item->data_hora,
-                'data_hora_fim' => $isAgenda ? $item->agenda->data_hora_fim : null,
-                'icone_cor'     => $isAgenda ? 'bg-success' : 'bg-primary',
+            return [
+                'id' => $item->id,
+                'etapa' => $item->etapa,
+                'descricao' => $item->descricao ?? 'Sem descrição informada.',
+                'data_hora' => $item->data_hora->format('d/m/Y H:i'),
+                'data_hora_fim' => $isAgenda ? optional($item->agenda->data_hora_fim)->format('d/m/Y H:i') : null,
+                'icone_cor' => $isAgenda ? 'bg-success' : 'bg-primary',
+                'tipo' => $isAgenda ? 'agenda' : 'andamento',
             ];
         });
 
-    return view('andamento.ver-andamento', [
-        'servico'        => $servico,
-        'andamentos'     => $andamentos,
-        'clienteNome'    => $cliente?->nome ?? $cliente?->razao_social ?? '—',
-        'cpfCnpj'        => $cpfCnpj ?? '—',
-        'tipoDocumento'  => $tipoDocumento,
-    ]);
-}
-
-
-
-
-public function store(Request $request, $servicoId)
-{
-    $validator = Validator::make($request->all(), [
-        'etapa' => 'required|string|max:255',
-        'descricao' => 'nullable|string',
-        'observacoes' => 'nullable|string',
-        'honorario' => 'nullable|numeric',
-        'data_hora' => 'required|date',
-    ]);
-
-    if ($validator->fails()) {
         return response()->json([
-            'message' => 'Erro de validação.',
-            'errors' => $validator->errors(),
-        ], 422);
+            'data' => $dados,
+            'next_page_url' => $andamentos->nextPageUrl()
+        ]);
     }
 
-    $andamento = AndamentoServico::create([
-        'servico_id' => $servicoId,
-        'etapa' => $request->etapa,
-        'descricao' => $request->descricao,
-        'observacoes' => $request->observacoes,
-        'honorario' => $request->honorario ?? null,
-        'data_hora' => $request->data_hora,
-    ]);
 
-    return response()->json([
-        'message' => 'Andamento salvo com sucesso!',
-        'andamento' => $andamento
-    ]);
-}
+
+    public function index($servicoId)
+    {
+        $servico = Servico::with(['tipoServico', 'andamentos'])->findOrFail($servicoId);
+        $cliente = $servico->clienteFormatado;
+
+        // Descriptografar CPF, CNPJ e celular
+        $cpfCnpj = $cliente?->cpf
+            ? Crypt::decryptString($cliente->cpf)
+            : ($cliente?->cnpj ? Crypt::decryptString($cliente->cnpj) : null);
+
+        $tipoDocumento = $cliente?->cpf ? 'cpf' : ($cliente?->cnpj ? 'cnpj' : null);
+
+        $andamentos = AndamentoServico::with('agenda')
+            ->where('servico_id', $servicoId)
+            ->orderByDesc('data_hora') // ordem decrescente
+            ->get()
+            ->map(function ($item) {
+                $isAgenda = $item->agenda_id && $item->agenda;
+
+                return (object) [
+                    'id'            => $item->id,
+                    'tipo'          => $isAgenda ? 'agenda' : 'andamento',
+                    'etapa'         => $item->etapa,
+                    'descricao'     => $item->descricao ?? 'Sem descrição informada.',
+                    'data_hora'     => $item->data_hora,
+                    'data_hora_fim' => $isAgenda ? $item->agenda->data_hora_fim : null,
+                    'icone_cor'     => $isAgenda ? 'bg-success' : 'bg-primary',
+                ];
+            });
+
+        return view('andamento.ver-andamento', [
+            'servico'        => $servico,
+            'andamentos'     => $andamentos,
+            'clienteNome'    => $cliente?->nome ?? $cliente?->razao_social ?? '—',
+            'cpfCnpj'        => $cpfCnpj ?? '—',
+            'tipoDocumento'  => $tipoDocumento,
+        ]);
+    }
+
+
+
+
+    public function store(Request $request, $servicoId)
+    {
+        $validator = Validator::make($request->all(), [
+            'etapa' => 'required|string|max:255',
+            'descricao' => 'nullable|string',
+            'observacoes' => 'nullable|string',
+            'honorario' => 'nullable|numeric',
+            'data_hora' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Erro de validação.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $andamento = AndamentoServico::create([
+            'servico_id' => $servicoId,
+            'etapa' => $request->etapa,
+            'descricao' => $request->descricao,
+            'observacoes' => $request->observacoes,
+            'honorario' => $request->honorario ?? null,
+            'data_hora' => $request->data_hora,
+        ]);
+
+        return response()->json([
+            'message' => 'Andamento salvo com sucesso!',
+            'andamento' => $andamento
+        ]);
+    }
 
     public function destroy($id)
     {

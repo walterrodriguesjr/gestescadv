@@ -225,7 +225,7 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
 
     Route::get('/etapas-servico', [EtapaServicoController::class, 'listar'])->name('etapas-servico.listar');
     Route::post('/andamentos/{servico}', [AndamentoServicoController::class, 'store'])->name('andamentos.store');
-
+    Route::get('/andamentos/{servico}/scroll', [AndamentoServicoController::class, 'listarAndamentos'])->name('andamentos.scroll');
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])
