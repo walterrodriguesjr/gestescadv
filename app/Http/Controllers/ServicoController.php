@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Models\ClientePessoaFisica;
 use App\Models\ClientePessoaJuridica;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
 
 
@@ -81,14 +82,10 @@ class ServicoController
      */
     public function store(Request $request)
 {
-    /* ───────────── REGRAS E MENSAGENS ───────────── */
     $rules = [
         'tipo_servico_id' => 'required|exists:' . (new TipoServico)->getTable() . ',id',
         'tipo_cliente'    => 'required|in:pf,pj',
         'data_inicio'     => 'required|date',
-
-        // ⬇️  NOVO ▸ número de processo não é obrigatório
-        //      aceita formato CNJ: 0000000-00.0000.0.00.0000
         'numero_processo' => [
             'nullable',
             'regex:/^\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}$/'
@@ -101,20 +98,17 @@ class ServicoController
         'tipo_cliente.required'    => 'O tipo de cliente é obrigatório.',
         'tipo_cliente.in'          => 'Tipo de cliente inválido.',
         'data_inicio.required'     => 'A data de início é obrigatória.',
-
-        // ⬇️  NOVO
         'numero_processo.regex'    => 'Número de processo fora do padrão CNJ (ex: 0000000-00.0000.0.00.0000).',
     ];
 
-    /* ───────────── REGRAS ESPECÍFICAS PF/PJ ───────────── */
     $tipoCliente = strtolower($request->tipo_cliente);
 
     if ($tipoCliente === 'pf') {
-        $rules['cliente_id']          = 'required|exists:' . (new ClientePessoaFisica)->getTable() . ',id';
+        $rules['cliente_id'] = 'required|exists:' . (new ClientePessoaFisica)->getTable() . ',id';
         $messages['cliente_id.required'] = 'O cliente é obrigatório.';
         $messages['cliente_id.exists']   = 'Cliente pessoa física não encontrado.';
     } elseif ($tipoCliente === 'pj') {
-        $rules['cliente_id']          = 'required|exists:' . (new ClientePessoaJuridica)->getTable() . ',id';
+        $rules['cliente_id'] = 'required|exists:' . (new ClientePessoaJuridica)->getTable() . ',id';
         $messages['cliente_id.required'] = 'O cliente é obrigatório.';
         $messages['cliente_id.exists']   = 'Cliente pessoa jurídica não encontrado.';
     }
@@ -128,7 +122,6 @@ class ServicoController
         ], 422);
     }
 
-    /* ───────────── CONTINUA IGUAL ───────────── */
     try {
         $usuario = auth()->user();
         if (!$usuario || !$usuario->id) {
@@ -148,7 +141,6 @@ class ServicoController
 
         DB::beginTransaction();
 
-        /* ╔═══════════════════ NOVO CAMPO ADICIONADO ═══════════════════╗ */
         $servico = Servico::create([
             'escritorio_id'   => $escritorio->id,
             'tipo_servico_id' => $request->tipo_servico_id,
@@ -156,11 +148,9 @@ class ServicoController
             'cliente_id'      => $request->cliente_id,
             'data_inicio'     => $request->data_inicio,
             'observacoes'     => $request->observacoes,
-            'numero_processo' => $request->numero_processo,   // ← opcional
+            'numero_processo' => $request->numero_processo,
         ]);
-        /* ╚═════════════════════════════════════════════════════════════╝ */
 
-        /* … resto do método permanece inalterado … */
         $arquivos = $request->file('anexos') ?? [];
         if (!empty($arquivos)) {
             $clienteId = $request->cliente_id;
@@ -199,7 +189,7 @@ class ServicoController
             AndamentoServico::create([
                 'servico_id' => $servico->id,
                 'etapa'      => $nomeMotivo,
-                'data_hora'  => $agenda->data_hora_inicio,
+                'data_hora'  => Carbon::parse($agenda->data_hora_inicio)->addMinute(),
                 'agenda_id'  => $agenda->id,
             ]);
         }
@@ -217,6 +207,7 @@ class ServicoController
         return response()->json(['message' => 'Erro ao iniciar o serviço.'], 500);
     }
 }
+
 
 
 

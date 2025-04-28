@@ -226,6 +226,9 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
     Route::get('/etapas-servico', [EtapaServicoController::class, 'listar'])->name('etapas-servico.listar');
     Route::post('/andamentos/{servico}', [AndamentoServicoController::class, 'store'])->name('andamentos.store');
     Route::get('/andamentos/{servico}/scroll', [AndamentoServicoController::class, 'listarAndamentos'])->name('andamentos.scroll');
+    Route::put('/servicos/{id}/numero-processo', [AndamentoServicoController::class, 'atualizarNumeroProcesso']);
+    Route::get('/servicos/{servicoId}/cliente/{clienteId}/arquivos', [AndamentoServicoController::class, 'listarTodosArquivosServico']);
+
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])

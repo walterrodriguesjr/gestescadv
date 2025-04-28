@@ -3,21 +3,41 @@
 @section('title', 'Andamento do Serviço')
 
 @section('content')
-    {{-- botão Voltar e Inserir --}}
-    <div class="row mb-3 align-items-center">
-        <div class="col-md-4">
-            <a href="{{ url()->previous() }}" class="btn btn-secondary">
+    {{-- botão Voltar, Inserir Andamento, Honorários e Editar/Inserir Número do Processo --}}
+    <div class="row mb-3 align-items-start">
+        {{-- Botão Voltar --}}
+        <div class="col-md-3">
+            <a href="{{ url()->previous() }}" onclick="event.preventDefault(); history.back();" class="btn btn-secondary w-100">
                 <i class="fas fa-arrow-left"></i> Voltar
             </a>
         </div>
 
-        <div class="col-md-4 text-center">
+        {{-- Botões de ação: Arquivos, Novo Andamento, Honorários, Nº Processo --}}
+        <div class="col-md-9 d-flex flex-column flex-md-row justify-content-md-end align-items-stretch gap-2 mt-3 mt-md-0">
+            <button class="btn btn-dark" onclick="abrirModalDocumentosServico({{ $servico->id }})">
+                <i class="fas fa-folder-open"></i> Todos os Arquivos
+            </button>
+
+            <button class="btn btn-primary" onclick="abrirModalHonorarios({{ $servico->id }})">
+                <i class="fas fa-dollar-sign"></i> Honorários
+            </button>
+
             <button class="btn btn-primary" onclick="abrirFormularioNovoAndamento({{ $servico->id }})">
                 <i class="fas fa-plus"></i> Inserir Andamento
             </button>
-        </div>
 
-        <div class="col-md-4"></div>
+            @if ($servico->numero_processo_formatado)
+                <button class="btn btn-success"
+                    onclick="abrirModalNumeroProcesso({{ $servico->id }}, '{{ $servico->numero_processo_formatado }}')">
+                    <i class="fas fa-edit"></i> Editar número do processo
+                </button>
+            @else
+                <button class="btn btn-primary"
+                    onclick="abrirModalNumeroProcesso({{ $servico->id }}, null)">
+                    <i class="fas fa-plus"></i> Inserir número do processo
+                </button>
+            @endif
+        </div>
     </div>
 
     {{-- Informações do Serviço --}}
@@ -132,4 +152,6 @@
     <script src="{{ asset('js/servico/andamento_servico/arquivos-servico-andamento.js') }}"></script>
     <script src="{{ asset('js/servico/andamento_servico/arquivos-servico-andamento-store.js') }}"></script>
     <script src="{{ asset('js/servico/andamento_servico/arquivos-servico-andamento-listener.js') }}"></script>
+    <script src="{{ asset('js/servico/andamento_servico/processo-servico-andamento-store.js') }}"></script>
+    <script src="{{ asset('js/servico/andamento_servico/todos-arquivos-servicos-andamento.js') }}"></script>
 @endpush

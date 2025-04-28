@@ -28,7 +28,7 @@ function carregarMaisAndamentos() {
                         <h3 class="timeline-header d-flex justify-content-between align-items-center">
                             <strong>${andamento.etapa}</strong>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-secondary" onclick="abrirArquivosSwal(${servicoId}, ${clienteId}, '${tipoCliente}', '${andamento.id}')">
+                                <button class="btn btn-sm btn-dark" onclick="abrirArquivosSwal(${servicoId}, ${clienteId}, '${tipoCliente}', '${andamento.id}')">
                                     <i class="fas fa-folder-open"></i> Arquivos
                                 </button>
                                 <button class="btn btn-sm btn-primary" onclick="abrirObservacaoSwal(${servicoId}, '${andamento.etapa}', '${moment(andamento.data_hora, 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD HH:mm:ss')}')">

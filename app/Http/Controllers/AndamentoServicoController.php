@@ -12,10 +12,60 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\File;
 
 
 class AndamentoServicoController
 {
+
+    public function listarTodosArquivosServico($servicoId, $clienteId)
+    {
+        $base1 = storage_path("app/public/arquivos_servicos/servico_{$servicoId}_cliente_{$clienteId}");
+        $base2 = storage_path("app/public/arquivos_servicos_andamento");
+
+        $arquivos = [];
+
+        // Arquivos diretos do serviço
+        if (File::exists($base1)) {
+            foreach (File::files($base1) as $file) {
+                $arquivos[] = [
+                    'nome' => $file->getFilename(),
+                    'url' => asset('storage/arquivos_servicos/servico_' . $servicoId . '_cliente_' . $clienteId . '/' . $file->getFilename()),
+                ];
+            }
+        }
+
+        // Arquivos de andamentos
+        $pastaAndamentos = collect(File::directories($base2))->filter(function ($pasta) use ($servicoId, $clienteId) {
+            return str_contains($pasta, "servico_{$servicoId}_") && str_contains($pasta, "_cliente_{$clienteId}");
+        });
+
+        foreach ($pastaAndamentos as $pasta) {
+            foreach (File::files($pasta) as $file) {
+                $dir = basename($pasta);
+                $arquivos[] = [
+                    'nome' => $file->getFilename(),
+                    'url' => asset('storage/arquivos_servicos_andamento/' . $dir . '/' . $file->getFilename()),
+                ];
+            }
+        }
+
+        return response()->json(['arquivos' => $arquivos]);
+    }
+
+    public function atualizarNumeroProcesso(Request $request, $id)
+{
+    $request->validate([
+        'numero_processo' => ['required', 'string', 'max:25']
+    ]);
+
+    $servico = Servico::findOrFail($id);
+    $servico->numero_processo = $request->numero_processo;
+    $servico->save();
+
+    return response()->json(['message' => 'Número do processo salvo com sucesso.']);
+}
+
 
     public function anexarArquivo(Request $request, $servicoId, $andamentoId, $clienteId)
     {
@@ -135,8 +185,10 @@ class AndamentoServicoController
 
         $andamento = AndamentoServico::where('servico_id', $servicoId)
             ->where('etapa', $request->etapa)
-            ->whereDate('data_hora', $dataHora->format('Y-m-d'))
-            ->whereTime('data_hora', $dataHora->format('H:i:s'))
+            ->whereBetween('data_hora', [
+                $dataHora->copy()->startOfMinute(),
+                $dataHora->copy()->endOfMinute()
+            ])
             ->first();
 
         if (!$andamento) {
@@ -155,26 +207,31 @@ class AndamentoServicoController
     }
 
 
+
     public function buscarObservacoes(Request $request, $servicoId)
-    {
-        $request->validate([
-            'etapa' => 'required|string|max:255',
-            'data_hora' => 'required|date'
-        ]);
+{
+    $request->validate([
+        'etapa' => 'required|string|max:255',
+        'data_hora' => 'required|date'
+    ]);
 
-        $dataHora = Carbon::parse($request->data_hora)->format('Y-m-d H:i:s');
+    $dataHora = Carbon::parse($request->data_hora);
 
-        $andamento = AndamentoServico::where('servico_id', $servicoId)
-            ->where('etapa', $request->etapa)
-            ->where('data_hora', $dataHora)
-            ->first();
+    $andamento = AndamentoServico::where('servico_id', $servicoId)
+        ->where('etapa', $request->etapa)
+        ->whereBetween('data_hora', [
+            $dataHora->copy()->startOfMinute(),
+            $dataHora->copy()->endOfMinute()
+        ])
+        ->first();
 
-        return response()->json([
-            'existe' => (bool) $andamento,
-            'descricao' => $andamento->observacoes ?? null,
-            'id' => $andamento->id ?? null
-        ]);
-    }
+    return response()->json([
+        'existe' => (bool) $andamento,
+        'descricao' => $andamento->observacoes ?? null,
+        'id' => $andamento->id ?? null
+    ]);
+}
+
 
 
     // Controller: AndamentoServicoController.php
