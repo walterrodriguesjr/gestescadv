@@ -2,6 +2,8 @@
 
 @section('title', 'Andamento do Serviço')
 
+@include('components.modais.honorarios-andamento')
+
 @section('content')
     {{-- botão Voltar, Inserir Andamento, Honorários e Editar/Inserir Número do Processo --}}
     <div class="row mb-3 align-items-start">
@@ -146,6 +148,7 @@
         const servicoId = {{ $servico->id }};
         const clienteId = {{ $servico->clienteFormatado->id }};
         const tipoCliente = '{{ $servico->tipo_cliente }}';
+        const escritorioId = {{ auth()->user()->escritorio->id }};
     </script>
 
     <script src="{{ asset('js/servico/andamento_servico/observacoes-servico-store.js') }}"></script>
@@ -154,4 +157,7 @@
     <script src="{{ asset('js/servico/andamento_servico/arquivos-servico-andamento-listener.js') }}"></script>
     <script src="{{ asset('js/servico/andamento_servico/processo-servico-andamento-store.js') }}"></script>
     <script src="{{ asset('js/servico/andamento_servico/todos-arquivos-servicos-andamento.js') }}"></script>
+    <script src="{{ asset('js/servico/andamento_servico/honorarios-servico-andamento-store.js') }}"></script>
+    <script src="{{ asset('js/servico/andamento_servico/honorarios-servico-andamento-update.js') }}"></script>
+    <script src="{{ asset('js/servico/andamento_servico/honorarios-servico-andamento-delete.js') }}"></script>
 @endpush

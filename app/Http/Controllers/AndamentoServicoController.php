@@ -5,18 +5,207 @@ namespace App\Http\Controllers;
 use App\Models\Agenda;
 use App\Models\Servico;
 use App\Models\AndamentoServico;
+use App\Models\Honorario;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 
 
 class AndamentoServicoController
 {
+    public function listar($servicoId)
+    {
+        $honorarios = Honorario::where('servico_id', $servicoId)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($honorario) {
+                $pasta = storage_path("app/public/honorarios/servico_{$honorario->servico_id}_cliente_{$honorario->cliente_id}");
+
+                $comprovanteUrl = null;
+
+                if (file_exists($pasta)) {
+                    $arquivos = array_diff(scandir($pasta), ['.', '..']);
+
+                    foreach ($arquivos as $arquivo) {
+                        if (is_file($pasta . DIRECTORY_SEPARATOR . $arquivo)) {
+                            $comprovanteUrl = asset("storage/honorarios/servico_{$honorario->servico_id}_cliente_{$honorario->cliente_id}/{$arquivo}");
+                            break;
+                        }
+                    }
+                }
+
+                return [
+                    'id'                 => $honorario->id,
+                    'valor_formatado'    => number_format($honorario->valor, 2, ',', '.'),
+                    'comprovante_url'    => $comprovanteUrl,
+                    'observacoes'        => $honorario->observacoes,
+                    'data_recebimento'   => optional($honorario->data_recebimento)->format('d/m/Y'),
+                ];
+            });
+
+        return response()->json($honorarios);
+    }
+
+
+    public function storeHonorario(Request $request)
+    {
+        $request->validate([
+            'servico_id'     => 'required|exists:servicos,id',
+            'cliente_id'     => 'required|integer',
+            'escritorio_id'  => 'required|exists:escritorios,id',
+            'valor'          => 'required|string',
+            'data_recebimento' => 'required|date', // Aceita formato Y-m-d
+            'comprovante'    => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $valorFormatado = str_replace(',', '.', str_replace('.', '', $request->valor));
+
+            $honorario = Honorario::create([
+                'servico_id'       => $request->servico_id,
+                'cliente_id'       => $request->cliente_id,
+                'escritorio_id'    => $request->escritorio_id,
+                'valor'            => $valorFormatado,
+                'observacoes'      => $request->observacoes,
+                'data_recebimento' => $request->data_recebimento,
+            ]);
+
+            if ($request->hasFile('comprovante')) {
+                $arquivo = $request->file('comprovante');
+                $extensao = $arquivo->getClientOriginalExtension();
+                $nomeFinal = 'doc-comprovante_' . time() . '_' . uniqid() . '.' . $extensao;
+                $caminho = "honorarios/servico_{$request->servico_id}_cliente_{$request->cliente_id}";
+
+                Storage::disk('public')->putFileAs($caminho, $arquivo, $nomeFinal);
+            }
+
+            DB::commit();
+
+            return response()->json(['message' => 'Honorário cadastrado com sucesso.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao salvar honorário: ' . $e->getMessage(), [
+                'linha'   => $e->getLine(),
+                'arquivo' => $e->getFile(),
+                'trace'   => $e->getTraceAsString(),
+            ]);
+
+            return response()->json(['message' => 'Erro ao salvar honorário.'], 500);
+        }
+    }
+
+
+    public function editarHonorario($id)
+    {
+        $honorario = Honorario::findOrFail($id);
+
+        /* ---------- procura arquivo na pasta padrão ---------- */
+        $dir = "honorarios/servico_{$honorario->servico_id}_cliente_{$honorario->cliente_id}";
+        $comprovanteUrl  = null;
+        $comprovanteNome = null;
+
+        if (Storage::disk('public')->exists($dir)) {
+            // pega o 1º arquivo da pasta; se quiser o mais recente, use sortByDesc->first()
+            $arquivo = collect(Storage::disk('public')->files($dir))->first();
+            if ($arquivo) {
+                $comprovanteUrl  = Storage::url($arquivo);
+                $comprovanteNome = basename($arquivo);
+            }
+        }
+
+        return response()->json([
+            'valor'            => number_format($honorario->valor, 2, ',', '.'),
+            'data_recebimento' => optional($honorario->data_recebimento)->format('d/m/Y'),
+            'observacoes'      => $honorario->observacoes,
+            'comprovante_url'  => $comprovanteUrl,
+            'comprovante_nome' => $comprovanteNome,
+        ]);
+    }
+
+
+    public function atualizarHonorario(Request $request, $id)
+    {
+        $request->validate([
+            'valor'            => 'required|string',
+            'data_recebimento' => 'required|date_format:d/m/Y',
+            'observacoes'      => 'nullable|string',
+            'comprovante'      => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $honorario = Honorario::findOrFail($id);
+
+            $honorario->valor            = str_replace(',', '.', str_replace('.', '', $request->valor));
+            $honorario->data_recebimento = Carbon::createFromFormat('d/m/Y', $request->data_recebimento);
+            $honorario->observacoes      = $request->observacoes;
+
+            if ($request->hasFile('comprovante')) {
+                $dir = "honorarios/servico_{$honorario->servico_id}_cliente_{$honorario->cliente_id}";
+
+                // apaga todos os arquivos da pasta (sempre 1 único comprovante)
+                if (Storage::disk('public')->exists($dir)) {
+                    collect(Storage::disk('public')->files($dir))
+                        ->each(fn($f) => Storage::disk('public')->delete($f));
+                }
+
+                $arquivo   = $request->file('comprovante');
+                $ext       = $arquivo->getClientOriginalExtension();
+                $nomeFinal = 'doc-comprovante_' . time() . '_' . uniqid() . '.' . $ext;
+
+                Storage::disk('public')->putFileAs($dir, $arquivo, $nomeFinal);
+            }
+
+            $honorario->save();
+            DB::commit();
+
+            return response()->json(['message' => 'Honorário atualizado com sucesso.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao atualizar honorário: ' . $e->getMessage());
+            return response()->json(['message' => 'Erro ao atualizar honorário.'], 500);
+        }
+    }
+
+
+    public function deletarHonorario($id)
+{
+    try {
+        $honorario = Honorario::findOrFail($id);
+
+        // Remove o arquivo do Storage, se existir
+        $pasta = "honorarios/servico_{$honorario->servico_id}_cliente_{$honorario->cliente_id}";
+        $arquivos = Storage::disk('public')->files($pasta);
+
+        foreach ($arquivos as $arquivo) {
+            Storage::disk('public')->delete($arquivo);
+        }
+
+        // Exclui o honorário do banco
+        $honorario->delete();
+
+        return response()->json(['message' => 'Honorário excluído com sucesso.']);
+    } catch (\Exception $e) {
+        Log::error('Erro ao excluir honorário: ' . $e->getMessage(), [
+            'linha' => $e->getLine(),
+            'arquivo' => $e->getFile()
+        ]);
+
+        return response()->json(['message' => 'Erro ao excluir honorário.'], 500);
+    }
+}
+
+
 
     public function listarTodosArquivosServico($servicoId, $clienteId)
     {
@@ -49,22 +238,22 @@ class AndamentoServicoController
                 ];
             }
         }
-
         return response()->json(['arquivos' => $arquivos]);
     }
 
+
     public function atualizarNumeroProcesso(Request $request, $id)
-{
-    $request->validate([
-        'numero_processo' => ['required', 'string', 'max:25']
-    ]);
+    {
+        $request->validate([
+            'numero_processo' => ['required', 'string', 'max:25']
+        ]);
 
-    $servico = Servico::findOrFail($id);
-    $servico->numero_processo = $request->numero_processo;
-    $servico->save();
+        $servico = Servico::findOrFail($id);
+        $servico->numero_processo = $request->numero_processo;
+        $servico->save();
 
-    return response()->json(['message' => 'Número do processo salvo com sucesso.']);
-}
+        return response()->json(['message' => 'Número do processo salvo com sucesso.']);
+    }
 
 
     public function anexarArquivo(Request $request, $servicoId, $andamentoId, $clienteId)
@@ -209,28 +398,28 @@ class AndamentoServicoController
 
 
     public function buscarObservacoes(Request $request, $servicoId)
-{
-    $request->validate([
-        'etapa' => 'required|string|max:255',
-        'data_hora' => 'required|date'
-    ]);
+    {
+        $request->validate([
+            'etapa' => 'required|string|max:255',
+            'data_hora' => 'required|date'
+        ]);
 
-    $dataHora = Carbon::parse($request->data_hora);
+        $dataHora = Carbon::parse($request->data_hora);
 
-    $andamento = AndamentoServico::where('servico_id', $servicoId)
-        ->where('etapa', $request->etapa)
-        ->whereBetween('data_hora', [
-            $dataHora->copy()->startOfMinute(),
-            $dataHora->copy()->endOfMinute()
-        ])
-        ->first();
+        $andamento = AndamentoServico::where('servico_id', $servicoId)
+            ->where('etapa', $request->etapa)
+            ->whereBetween('data_hora', [
+                $dataHora->copy()->startOfMinute(),
+                $dataHora->copy()->endOfMinute()
+            ])
+            ->first();
 
-    return response()->json([
-        'existe' => (bool) $andamento,
-        'descricao' => $andamento->observacoes ?? null,
-        'id' => $andamento->id ?? null
-    ]);
-}
+        return response()->json([
+            'existe' => (bool) $andamento,
+            'descricao' => $andamento->observacoes ?? null,
+            'id' => $andamento->id ?? null
+        ]);
+    }
 
 
 

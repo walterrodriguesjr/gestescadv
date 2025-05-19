@@ -229,6 +229,14 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
     Route::put('/servicos/{id}/numero-processo', [AndamentoServicoController::class, 'atualizarNumeroProcesso']);
     Route::get('/servicos/{servicoId}/cliente/{clienteId}/arquivos', [AndamentoServicoController::class, 'listarTodosArquivosServico']);
 
+    Route::prefix('honorarios')->group(function () {
+    Route::post('/', [AndamentoServicoController::class, 'storeHonorario'])->name('honorarios.store');
+    Route::get('/{servicoId}/listar', [AndamentoServicoController::class, 'listar'])->name('honorarios.listar');
+    Route::get('/{honorario}/editar', [AndamentoServicoController::class, 'editarHonorario'])->name('honorarios.editar'); // ← NOVA ROTA
+    Route::put('/{honorario}/atualizar', [AndamentoServicoController::class, 'atualizarHonorario'])->name('honorarios.update');
+    Route::delete('/{honorario}/excluir', [AndamentoServicoController::class, 'deletarHonorario'])->name('honorarios.excluir');
+});
+
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])
