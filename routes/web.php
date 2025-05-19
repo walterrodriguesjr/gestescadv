@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\DespesaController;
 use App\Http\Controllers\EscritorioController;
 use App\Http\Controllers\EtapaServicoController;
 use App\Http\Controllers\MembroEscritorioController;
@@ -230,13 +231,22 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
     Route::get('/servicos/{servicoId}/cliente/{clienteId}/arquivos', [AndamentoServicoController::class, 'listarTodosArquivosServico']);
 
     Route::prefix('honorarios')->group(function () {
-    Route::post('/', [AndamentoServicoController::class, 'storeHonorario'])->name('honorarios.store');
-    Route::get('/{servicoId}/listar', [AndamentoServicoController::class, 'listar'])->name('honorarios.listar');
-    Route::get('/{honorario}/editar', [AndamentoServicoController::class, 'editarHonorario'])->name('honorarios.editar'); // ← NOVA ROTA
-    Route::put('/{honorario}/atualizar', [AndamentoServicoController::class, 'atualizarHonorario'])->name('honorarios.update');
-    Route::delete('/{honorario}/excluir', [AndamentoServicoController::class, 'deletarHonorario'])->name('honorarios.excluir');
-});
+        Route::post('/', [AndamentoServicoController::class, 'storeHonorario'])->name('honorarios.store');
+        Route::get('/{servicoId}/listar', [AndamentoServicoController::class, 'listar'])->name('honorarios.listar');
+        Route::get('/{honorario}/editar', [AndamentoServicoController::class, 'editarHonorario'])->name('honorarios.editar'); // ← NOVA ROTA
+        Route::put('/{honorario}/atualizar', [AndamentoServicoController::class, 'atualizarHonorario'])->name('honorarios.update');
+        Route::delete('/{honorario}/excluir', [AndamentoServicoController::class, 'deletarHonorario'])->name('honorarios.excluir');
+    });
 
+    // Rota de membros do escritorio
+    Route::resource('despesas', DespesaController::class)->names([
+        'index'   => 'despesas.index',
+        'create'  => 'despesas.create',
+        'store'   => 'despesas.store',
+        'edit'    => 'despesas.edit',
+        'update'  => 'despesas.update',
+        'destroy' => 'despesas.destroy',
+    ]);
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])
