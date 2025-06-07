@@ -16,6 +16,7 @@ use App\Http\Controllers\NivelAcessoController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\ServicoController;
 use App\Http\Controllers\SessaoController;
+use App\Http\Controllers\TipoDespesaController;
 
 /**
  * Redireciona '/' com base na autenticação do usuário.
@@ -238,7 +239,7 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
         Route::delete('/{honorario}/excluir', [AndamentoServicoController::class, 'deletarHonorario'])->name('honorarios.excluir');
     });
 
-    // Rota de membros do escritorio
+    // Rota de Despesas
     Route::resource('despesas', DespesaController::class)->names([
         'index'   => 'despesas.index',
         'create'  => 'despesas.create',
@@ -247,6 +248,20 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
         'update'  => 'despesas.update',
         'destroy' => 'despesas.destroy',
     ]);
+
+    //Rota de Tipo de despesa
+    Route::resource('tipo-despesas', TipoDespesaController::class)->names([
+        'index'   => 'tipo-despesas.index',
+        'create'  => 'tipo-despesas.create',
+        'store'   => 'tipo-despesas.store',
+        'edit'    => 'tipo-despesas.edit',
+        'show'    => 'tipo-despesas.show',
+        'update'  => 'tipo-despesas.update',
+        'destroy' => 'tipo-despesas.destroy',
+    ]);
+
+    // Route dedicada para listar tipos de despesa do escritório tornando disponível no select de tipo de despesa logo após ser criada 
+    Route::get('/tipo-despesas/listar/{escritorio_id}', [TipoDespesaController::class, 'listar'])->name('tipo-despesas.listar');
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])
