@@ -1,73 +1,55 @@
 // public/js/despesa/despesa-form-store.js
 
 $(function () {
-    // Adiciona método "pattern" caso não exista (compatibilidade)
-    if (!$.validator.methods.pattern) {
-        $.validator.addMethod("pattern", function (value, element, param) {
-            if (this.optional(element)) return true;
-            if (typeof param === "string") param = new RegExp(param);
-            return param.test(value);
-        }, "Formato inválido.");
-    }
-
-    // Inicializa a validação do formulário usando jQuery Validate
-    $('#formCadastrarDespesa').validate({
-        rules: {
-            tipo_despesa_id: { required: true },
-            valor: {
-                required: true,
-                pattern: /^\d{1,3}(\.\d{3})*,\d{2}$|^\d+,\d{2}$/
-            },
-            data_vencimento: { required: true }
-        },
-        messages: {
-            tipo_despesa_id: {
-                required: "<strong class='text-danger'><i class='fas fa-exclamation-circle'></i> Escolha um tipo de despesa!</strong>"
-            },
-            valor: {
-                required: "<strong class='text-danger'><i class='fas fa-exclamation-circle'></i> Informe o valor!</strong>",
-                pattern: "<strong class='text-danger'><i class='fas fa-exclamation-circle'></i> Informe um valor válido!</strong>"
-            },
-            data_vencimento: {
-                required: "<strong class='text-danger'><i class='fas fa-exclamation-circle'></i> Informe a data de vencimento!</strong>"
-            }
-        },
-        errorPlacement: function (error, element) {
-            error.insertAfter(element);
-        },
-        highlight: function (element) {
-            $(element).addClass('is-invalid');
-        },
-        unhighlight: function (element) {
-            $(element).removeClass('is-invalid');
-        }
-    });
-
-    // Evento click no botão de salvar
+    // Ao clicar em salvar despesa
     $(document).on('click', '#btnSalvarDespesa', function (e) {
         e.preventDefault();
 
-        if (!$('#formCadastrarDespesa').valid()) {
-            Swal.fire('Erro', 'Preencha todos os campos obrigatórios corretamente.', 'error');
+        // Array com os campos obrigatórios: [selector, texto para exibir no swal]
+        const camposObrigatorios = [
+            { campo: '#tipo_despesa_id', nome: 'Tipo de despesa' },
+            { campo: '#valor', nome: 'Valor' },
+            { campo: '#data_vencimento', nome: 'Data de vencimento' }
+        ];
+
+        let camposNaoPreenchidos = camposObrigatorios
+            .filter(item => !$(item.campo).val())
+            .map(item => `<li><i class="fas fa-exclamation-circle text-danger mr-1"></i>${item.nome}</li>`)
+            .join('');
+
+        // Validação especial para valor (opcional: regex valor brasileiro)
+        let valorValido = true;
+        let valor = $('#valor').val();
+        if (valor) {
+            valorValido = /^\d{1,3}(\.\d{3})*,\d{2}$|^\d+,\d{2}$/.test(valor);
+            if (!valorValido) {
+                camposNaoPreenchidos += `<li><i class="fas fa-exclamation-circle text-danger mr-1"></i>Valor em formato inválido!</li>`;
+            }
+        }
+
+        if (camposNaoPreenchidos) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Atenção!',
+                html: `Preencha os seguintes campos obrigatórios antes de salvar:
+                       <ul class="text-left mt-2">${camposNaoPreenchidos}</ul>`,
+                confirmButtonColor: '#6c63ff'
+            });
             return;
         }
 
-        // Pega os dados do form
-        let tipoDespesaId = $('#tipo_despesa_id').val();
-        let valor = $('#valor').val();
-        let dataVencimento = $('#data_vencimento').val();
-
-        // Normaliza valor para float (ex: 1.234,56 -> 1234.56)
+        // Normaliza o valor para float (ex: 1.234,56 => 1234.56)
         if (valor) valor = valor.replace(/\./g, '').replace(',', '.');
 
+        // Prepara os dados para enviar
         let dataToSend = {
             escritorio_id: escritorioId,
-            tipo_despesa_id: tipoDespesaId,
+            tipo_despesa_id: $('#tipo_despesa_id').val(),
             valor: valor,
-            data_vencimento: dataVencimento
+            data_vencimento: $('#data_vencimento').val()
         };
 
-        // --- Loader padrão: mínimo 1.5s, máximo 10s ---
+        // Loader padrão SweetAlert2
         let podeFechar = false;
         const tempoMinimo = 1500;
         const tempoMaximo = 10000;
@@ -84,7 +66,7 @@ $(function () {
             }
         });
 
-        // Ajax para salvar
+        // AJAX para salvar
         $.ajax({
             url: urlDespesaStore,
             method: 'POST',
@@ -100,6 +82,7 @@ $(function () {
                     Swal.fire('Sucesso!', 'Despesa cadastrada com sucesso.', 'success');
                     $('#formCadastrarDespesa')[0].reset();
                     $('#tipo_despesa_id').val('').trigger('change');
+                    if (window.tabelaDespesas) window.tabelaDespesas.ajax.reload();
                 };
 
                 if (podeFechar) {

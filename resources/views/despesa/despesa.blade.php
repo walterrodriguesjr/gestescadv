@@ -31,12 +31,12 @@
                             <input type="text" name="valor" id="valor" class="form-control" required>
                         </div>
                         <div class="col-md-3">
-                            <label for="data_vencimento" class="form-label">Data</label>
+                            <label for="data_vencimento" class="form-label">Data de Vencimento</label>
                             <input type="date" name="data_vencimento" id="data_vencimento" class="form-control" required>
 
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
-                            <button type="button" class="btn btn-success w-100" id="btnSalvarDespesa">
+                            <button type="button" class="btn btn-primary w-100" id="btnSalvarDespesa">
                                 <i class="fas fa-save"></i> Salvar
                             </button>
                         </div>
@@ -57,8 +57,8 @@
                     <button type="button" class="btn btn-outline-primary btn-mes-despesa" data-mes="10">Out</button>
                     <button type="button" class="btn btn-outline-primary btn-mes-despesa" data-mes="11">Nov</button>
                     <button type="button" class="btn btn-outline-primary btn-mes-despesa" data-mes="12">Dez</button>
+                    <select id="selectAnoDespesa" class="form-select w-auto ms-2"></select>
                 </div>
-
 
                 <div class="table-responsive">
                     <table id="tabelaDespesas" class="table table-bordered table-striped w-100 align-middle">
@@ -66,7 +66,7 @@
                             <tr>
                                 <th>Tipo</th>
                                 <th>Valor</th>
-                                <th>Data</th>
+                                <th>Data de Vencimento</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -91,6 +91,8 @@
     <script src="{{ asset('js/despesa/despesa-form-index.js') }}"></script>
     <script src="{{ asset('js/despesa/despesa-form-show.js') }}"></script>
     <script src="{{ asset('js/despesa/despesa-form-store.js') }}"></script>
+    <script src="{{ asset('js/despesa/despesa-form-update.js') }}"></script>
+    <script src="{{ asset('js/despesa/despesa-form-delete.js') }}"></script>
 
     <script>
         // Define a URL global usando Blade

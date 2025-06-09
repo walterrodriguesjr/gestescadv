@@ -7,19 +7,11 @@ $(function () {
     $(document).on('click', '.btn-editar-despesa', function () {
         const id = $(this).data('id');
 
-        // Loader só durante AJAX, não exibir após clicar em editar
-        Swal.fire({
-            title: 'Carregando...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
-
+        // AJAX direto, sem loader visível na tela!
         $.ajax({
             url: `/despesas/${id}/edit`,
             method: 'GET',
             success: function (resp) {
-                Swal.close();
-
                 // Monta HTML do modal
                 let opcoes = '';
                 resp.tiposDespesa.forEach(tipo => {
@@ -57,14 +49,15 @@ $(function () {
                         </form>
                     `,
                     showCancelButton: true,
-                    confirmButtonText: '<i class="fas fa-check"></i> Salvar',
-                    cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
                     focusConfirm: false,
                     reverseButtons: true,
+                    confirmButtonText: '<i class="fas fa-check"></i> Salvar',
+                    cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
                     customClass: {
                         confirmButton: 'btn btn-primary ms-2',
                         cancelButton: 'btn btn-secondary me-2'
                     },
+                    buttonsStyling: false,
                     didOpen: () => {
                         if (choicesTipoDespesaEdit) choicesTipoDespesaEdit.destroy();
                         choicesTipoDespesaEdit = new Choices('#tipo_despesa_id_edit', {
@@ -72,8 +65,6 @@ $(function () {
                             itemSelectText: '',
                             shouldSort: false
                         });
-
-                        // Máscara para valor
                         $('#valor_edit').mask('#.##0,00', { reverse: true });
                     },
                     preConfirm: () => {
@@ -107,11 +98,12 @@ $(function () {
                         const tempoMaximo = 10000;
                         const inicio = Date.now();
 
+                        // Agora SIM, mostra o loader!
                         Swal.fire({
                             title: 'Salvando...',
                             allowOutsideClick: false,
                             showConfirmButton: false,
-                            didOpen: () => {
+                            willOpen: () => {
                                 Swal.showLoading();
                                 setTimeout(() => { podeFechar = true; }, tempoMinimo);
                                 setTimeout(() => { if (Swal.isVisible()) Swal.close(); }, tempoMaximo);
@@ -128,7 +120,15 @@ $(function () {
                                 const tempoDecorrido = Date.now() - inicio;
                                 const atraso = tempoMinimo - tempoDecorrido;
                                 const mostrarSwalSucesso = () => {
-                                    Swal.fire('Sucesso!', 'Despesa atualizada com sucesso.', 'success');
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Sucesso!',
+                                        text: 'Despesa atualizada com sucesso.',
+                                        customClass: {
+                                            confirmButton: 'btn btn-primary'
+                                        },
+                                        buttonsStyling: false
+                                    });
                                     if (window.tabelaDespesas) window.tabelaDespesas.ajax.reload();
                                 };
                                 if (podeFechar) {
@@ -144,7 +144,15 @@ $(function () {
                             error: function (xhr) {
                                 const mostrarSwalErro = () => {
                                     let msg = xhr.responseJSON?.message || 'Erro ao atualizar despesa.';
-                                    Swal.fire('Erro', msg, 'error');
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Erro',
+                                        text: msg,
+                                        customClass: {
+                                            confirmButton: 'btn btn-danger'
+                                        },
+                                        buttonsStyling: false
+                                    });
                                 };
                                 if (podeFechar) {
                                     Swal.close();
@@ -161,7 +169,15 @@ $(function () {
                 });
             },
             error: function (xhr) {
-                Swal.fire('Erro', xhr.responseJSON?.message || 'Erro ao buscar despesa.', 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: xhr.responseJSON?.message || 'Erro ao buscar despesa.',
+                    customClass: {
+                        confirmButton: 'btn btn-danger'
+                    },
+                    buttonsStyling: false
+                });
             }
         });
     });

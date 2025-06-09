@@ -249,6 +249,8 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
         'destroy' => 'despesas.destroy',
     ]);
 
+    Route::patch('/despesas/{id}/alterar-status', [DespesaController::class, 'alterarStatus'])->name('despesas.alterarStatus');
+
     //Rota de Tipo de despesa
     Route::resource('tipo-despesas', TipoDespesaController::class)->names([
         'index'   => 'tipo-despesas.index',
@@ -260,7 +262,7 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
         'destroy' => 'tipo-despesas.destroy',
     ]);
 
-    // Route dedicada para listar tipos de despesa do escritório tornando disponível no select de tipo de despesa logo após ser criada 
+    // Route dedicada para listar tipos de despesa do escritório tornando disponível no select de tipo de despesa logo após ser criada
     Route::get('/tipo-despesas/listar/{escritorio_id}', [TipoDespesaController::class, 'listar'])->name('tipo-despesas.listar');
 });
 
