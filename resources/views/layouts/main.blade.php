@@ -68,6 +68,9 @@
     <!-- Override visual do Choices.js -->
     <link rel="stylesheet" href="{{ asset('css/custom/choices-overrides.css') }}">
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -139,6 +142,8 @@
 
     <!-- Moment.js -->
     <script src="{{ asset('vendor/moment-js/js/moment-with-locales.js') }}"></script>
+
+
 
 
     <!-- Scripts adicionais -->

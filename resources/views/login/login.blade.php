@@ -22,7 +22,7 @@
                                 <i class="fas fa-exclamation-circle"></i> {{ $errors->first('throttle') }}
                             </div>
                         @endif
-                        
+
 
                         <!-- Formulário de Login -->
                         <form action="{{ route('login') }}" method="POST">
@@ -30,13 +30,13 @@
                             <!-- Email -->
                             <div class="mb-4">
                                 <label for="email" class="form-label">Email</label>
-                                <input 
-                                    type="email" 
-                                    class="form-control @error('email') is-invalid @enderror" 
-                                    id="email" 
-                                    name="email" 
-                                    value="{{ old('email') }}" 
-                                    required 
+                                <input
+                                    type="email"
+                                    class="form-control @error('email') is-invalid @enderror"
+                                    id="email"
+                                    name="email"
+                                    value="{{ old('email') }}"
+                                    required
                                     autofocus>
                                 @error('email')
                                     <div class="invalid-feedback">
@@ -44,15 +44,15 @@
                                     </div>
                                 @enderror
                             </div>
-                            
+
                             <!-- Senha -->
                             <div class="mb-4">
                                 <label for="password" class="form-label">Senha</label>
-                                <input 
-                                    type="password" 
-                                    class="form-control @error('password') is-invalid @enderror" 
-                                    id="password" 
-                                    name="password" 
+                                <input
+                                    type="password"
+                                    class="form-control @error('password') is-invalid @enderror"
+                                    id="password"
+                                    name="password"
                                     required>
                                 @error('password')
                                     <div class="invalid-feedback">
@@ -60,30 +60,30 @@
                                     </div>
                                 @enderror
                             </div>
-                            
+
                             <!-- Lembrar-me -->
                             <div class="mb-4 form-check">
-                                <input 
-                                    type="checkbox" 
-                                    class="form-check-input" 
-                                    id="remember" 
+                                <input
+                                    type="checkbox"
+                                    class="form-check-input"
+                                    id="remember"
                                     name="remember">
                                 <label class="form-check-label" for="remember">Lembrar-me</label>
                             </div>
-                            
+
                             <!-- Botão de Login -->
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary">Entrar</button>
                             </div>
                         </form>
                     </div>
-                    
+
                     <!-- Link para recuperação de senha -->
                     <div class="card-footer text-center">
                         <a href="{{ route('password.request') }}" class="text-decoration-none">Esqueceu sua senha?</a>
                     </div>
                 </div>
-                
+
                 <!-- Rodapé -->
                 <footer class="text-center mt-4 text-muted">
                     <small>© {{ date('Y') }} Gestão Jurídica. Todos os direitos reservados.</small>
@@ -91,6 +91,6 @@
             </div>
         </div>
     </div>
-    <script src="{{ asset('js/app.js') }}"></script> <!-- Inclua o JS compilado -->
-</body>
+{{--     <script src="{{ asset('js/app.js') }}"></script> <!-- Inclua o JS compilado -->
+ --}}</body>
 </html>

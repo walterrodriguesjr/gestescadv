@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\DespesaController;
+use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\EscritorioController;
 use App\Http\Controllers\EtapaServicoController;
 use App\Http\Controllers\MembroEscritorioController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\ServicoController;
 use App\Http\Controllers\SessaoController;
 use App\Http\Controllers\TipoDespesaController;
+use App\Http\Controllers\TipoDocumentosController;
 
 /**
  * Redireciona '/' com base na autenticação do usuário.
@@ -264,6 +266,35 @@ Route::middleware(['auth', 'two-factor.verified', 'usuario.ativo'])->group(funct
 
     // Route dedicada para listar tipos de despesa do escritório tornando disponível no select de tipo de despesa logo após ser criada
     Route::get('/tipo-despesas/listar/{escritorio_id}', [TipoDespesaController::class, 'listar'])->name('tipo-despesas.listar');
+
+    //Rota de Tipo de documentos
+    Route::resource('', TipoDocumentosController::class)->names([
+        'index'   => 'tipo-documentos.index',
+        'create'  => 'tipo-documentos.create',
+        'store'   => 'tipo-documentos.store',
+        'edit'    => 'tipo-documentos.edit',
+        'show'    => 'tipo-documentos.show',
+        'update'  => 'tipo-documentos.update',
+        'destroy' => 'tipo-documentos.destroy',
+    ]);
+
+    // Documentos (resource)
+    Route::resource('documentos', DocumentoController::class)->names([
+        'index'   => 'documentos.index',
+        'create'  => 'documentos.create',
+        'store'   => 'documentos.store',
+        'edit'    => 'documentos.edit',
+        'show'    => 'documentos.show',
+        'update'  => 'documentos.update',
+        'destroy' => 'documentos.destroy',
+    ]);
+
+    Route::get('tipos-documento/listar/{escritorio_id}', [TipoDocumentosController::class, 'listar'])
+    ->name('tipos-documento.listar');
+
+Route::post('/documentos/assistente-ia', [DocumentoController::class, 'assistenteIa'])->name('documentos.assistente-ia');
+
+
 });
 
 Route::get('membro-escritorio/{id}', [MembroEscritorioController::class, 'show'])

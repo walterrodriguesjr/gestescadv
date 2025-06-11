@@ -30,7 +30,8 @@ class ResetDatabase extends Command
             'MembroSeeder',
             'TipoServicoSeeder',
             'EtapasServicoSeeder',
-            'TipoDespesaSeeder'
+            'TipoDespesaSeeder',
+            'TipoDocumentoSeeder',
         ];
 
         foreach ($seeders as $seeder) {
@@ -48,6 +49,7 @@ class ResetDatabase extends Command
             storage_path('app/public/arquivos_servicos_andamento'),
             storage_path('app/public/documento-usuario'),
             storage_path('app/public/honorarios'),
+            storage_path('app/public/documentos'),
         ];
 
         foreach ($pastasParaApagar as $pasta) {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Crypt;
 
 class UserData extends Model
 {
@@ -25,19 +26,20 @@ class UserData extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function getDecrypted($field)
-    {
-        try {
-            // 🔥 Apenas os campos criptografados devem ser descriptografados
-            $encryptedFields = ['cpf', 'telefone', 'celular', 'oab'];
 
-            if (in_array($field, $encryptedFields) && !is_null($this->$field)) {
-                return decrypt($this->$field);
-            }
-            return $this->$field; // Retorna normal se não for criptografado
-        } catch (\Exception $e) {
-            Log::error("❌ Erro ao descriptografar {$field}: " . $e->getMessage());
-            return null;
+public function getDecrypted($field)
+{
+    try {
+        $encryptedFields = ['cpf', 'telefone', 'celular', 'oab'];
+
+        if (in_array($field, $encryptedFields) && !is_null($this->$field)) {
+            return Crypt::decryptString($this->$field); // 🔥 Aqui troca para decryptString
         }
+        return $this->$field;
+    } catch (\Exception $e) {
+        Log::error("❌ Erro ao descriptografar {$field}: " . $e->getMessage());
+        return null;
     }
+}
+
 }
